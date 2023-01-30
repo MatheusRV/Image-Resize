@@ -40,7 +40,7 @@
     }
 
     public static function selectVar($table, $var, $condition){
-      $sql = MySql::connect()->prepare("SELECT * FROM `$table` WHERE `$var` = ? AND deleted = 0 LIMIT 1");
+      $sql = MySql::connect()->prepare("SELECT * FROM `$table` WHERE `$var` = ? LIMIT 1");
       $sql->execute([$condition]);
 
       $sql = $sql->fetch();
@@ -48,11 +48,11 @@
       return $sql;
     }
 
-    public static function selectLimited($table, $start, $end, $elOrder = null, $order = null, $by_att = null){
-       $query = "SELECT * FROM `$table` WHERE deleted = 0";
+    public static function selectLimited($table, $start, $end, $elOrder = null, $order = null){
+       $query = "SELECT * FROM `$table`";
 
       if($order != null && $elOrder != null){
-        $query .= $by_att == null ? " ORDER BY $elOrder $order" :" ORDER BY last_att DESC, $elOrder $order";
+        $query .= " ORDER BY $elOrder $order";
       }
 
       $query .= " LIMIT $start, $end";
@@ -213,6 +213,27 @@
       }
 
       return false;
+    }
+
+    public static function getColumns($db, $table){
+      if(is_string($db) && $db != '' && is_string($table) && $table != ''){
+        $columns = array();
+
+        $query = "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = '".$db. "' AND TABLE_NAME = '".$table."'";
+
+        $sql = MySql::connect()->prepare($query);
+
+        if($sql->execute() && $sql->rowCount() > 0){
+          $sql = $sql->fetchAll();
+          foreach($sql as $k2 => $c){
+            $columns[] = $c['COLUMN_NAME'];
+          }
+
+          return $columns;
+        }
+        else{ return false; }
+      }
+      else{ return "Can't reach database and table"; }
     }
   }
 ?>
