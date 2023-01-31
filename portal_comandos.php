@@ -10,6 +10,11 @@
     					<div class=\"row pb-4\">
 								<div class=\"col-12\"><h1 class=\"mb-0 h2\">Dashboard </h1></div>
 							</div>";	?>
+		echo "<section class=\"py-4\">
+						<div class=\"container\">
+    					<div class=\"row pb-4\">
+								<div class=\"col-12\"><h1 class=\"mb-0 h2\">Dashboard </h1></div>
+							</div>";	?>
 
 <!-- =======================
 Main contain START -->
@@ -38,7 +43,14 @@ Main contain START -->
 								<!-- Icon -->
 								<div class="icon-xl fs-1 bg-primary bg-opacity-10 rounded-3 text-primary"><i class="bi bi-file-earmark-text-fill"></i></div>
 								<!-- Content -->
-								<div class="ms-3"><h3>180</h3><h6 class="mb-0">Posts</h6></div>
+								<div class="ms-3"><h3>
+
+							<?php
+								$result = Db::selectAll('noticias');
+								$total = count($result);
+								echo $total;	?>
+									
+								</h3><h6 class="mb-0">Posts</h6></div>
 							</div>
 						</div>
 					</div>
@@ -111,6 +123,8 @@ Main contain START -->
 						$result = Db::selectLimited('noticias', 0, 5, 'id', 'DESC');
 						foreach($result as $key => $row){
 							$data=date('d/m/y', strtotime($row['pdate'])).' às '.date('H:i', strtotime($row['pdate']));
+							$URL_titulo = seoUrl($row['titulo']);	
+							$URL_tema = seoUrl($row['tema']);
 							echo "<tr>
 										<td><h6 class=\"course-title mt-2 mt-md-0 mb-0\"><a href=\"{$_SERVER['PHP_SELF']}?action=editarnews&id={$row['id']}\">{$row['titulo']}</a></h6></td>
 										<td>$data</td>
@@ -118,7 +132,7 @@ Main contain START -->
 										<td><div class=\"d-flex gap-2\">
                         <a href=\"{$_SERVER['PHP_SELF']}?action=editarnews&id={$row['id']}\" class=\"btn btn-light btn-round mb-0\" data-bs-toggle=\"tooltip\" data-bs-placement=\"top\" title=\"Editar\"><i class=\"bi bi-pencil-square\"></i></a>
                         <a href=\"#\" class=\"btn btn-light btn-round mb-0\" data-bs-toggle=\"tooltip\" data-bs-placement=\"top\" title=\"Deletar\"><i class=\"bi bi-trash\"></i></a>
-                        <a href=\"whatsapp://send?text=*{$row['titulo']}*+Veja+mais+em+https://www.canalicara.com/{$row['editoria']}/<?php echo $rowendereco; ?>-{$row['id']}.html\" class=\"btn btn-light btn-round mb-0\" data-bs-toggle=\"tooltip\" data-bs-placement=\"top\" title=\"Compartilhar\"><i class=\"bi bi-whatsapp\"></i></a>
+                        <a href=\"whatsapp://send?text=*{$row['titulo']}*+Veja+mais+em+https://www.canalicara.com/$URL_tema/$URL_titulo-{$row['id']}.html\" class=\"btn btn-light btn-round mb-0\" data-bs-toggle=\"tooltip\" data-bs-placement=\"top\" title=\"Compartilhar\"><i class=\"bi bi-whatsapp\"></i></a>
                       </div>
 										</td>
 									</tr>";
@@ -173,13 +187,15 @@ Main contain START -->
 				<?php
 						$result = Db::selectLimited('noticias', 0, 5, 'cont', 'DESC', 'pdate between now() - INTERVAL 7 DAY');
 						foreach($result as $key => $row){
-							$img=substr($row['imagem'], 26);
 							$data=date('d/m/y', strtotime($row['pdate'])).' às '.date('H:i', strtotime($row['pdate']));
+							$img=substr($row['imagem'], 26);							
+							$URL_titulo = seoUrl($row['titulo']);	
+							$URL_tema = seoUrl($row['tema']);
 							echo "<div class=\"col-12\">
 								<div class=\"d-flex align-items-center position-relative\">
 									<img class=\"w-60 rounded\" src=\"https://www.canalicara.com/imgtemp/?largura=300&altura=300&arquivo=$img\" alt=\"product\">
 									<div class=\"ms-3\">
-										<a href=\"#\" class=\"h6 stretched-link\">{$row['titulo']}</a>
+										<a href=\"https://www.canalicara.com/$URL_tema/$URL_titulo-{$row['id']}.html\" class=\"h6 stretched-link\" target=_blank>{$row['titulo']}</a>
 										<p class=\"small mb-0\">$data - {$row['cont']} visualizações</p>
 									</div>
 								</div>

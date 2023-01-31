@@ -86,15 +86,18 @@
 		$db = Db::selectVar('admin_usuarios', 'id', $_SESSION['id_usuario']);
 		if(is_array($db) && md5($p['senha']) == $db['senha']){
 			if($p['novasenha1'] == $p['novasenha2']){
-				if($p['novasenha1'] != $p['senha']){
-					$dataSend = array('nome' => $p['novonome'], 'senha' => md5($p['novasenha1']), 'id' => $p['id']);
-					print_r($dataSend);
-					if(Db::update('admin_usuarios', $dataSend)){
-						$_SESSION['nome_usuario'] = $p['novonome'];
-						$_SESSION['user_result'] = '<font face="verdana" size="2">Editado com sucesso</font>';
+				if(strlen($p['novasenha1']) > 7){
+					if($p['novasenha1'] != $p['senha']){
+						$dataSend = array('nome' => $p['novonome'], 'senha' => md5($p['novasenha1']), 'id' => $p['id']);
+						print_r($dataSend);
+						if(Db::update('admin_usuarios', $dataSend)){
+							$_SESSION['nome_usuario'] = $p['novonome'];
+							$_SESSION['user_result'] = '<font face="verdana" size="2">Editado com sucesso</font>';
+						}
 					}
+					else{ $_SESSION['user_result'] = '<font face="verdana" size="2">Sua nova senha não pode ser igual a sua senha atual!</font>'; }
 				}
-				else{ $_SESSION['user_result'] = '<font face="verdana" size="2">Sua nova senha não pode ser igual a sua senha atual!</font>'; }
+				else{ $_SESSION['user_result'] = '<font face="verdana" size="2">A senha deve ter no mínimo 6 caracteres! </font>'; }
 			}
 			else{ $_SESSION['user_result'] = '<font face="verdana" size="2">Sua nova senha não é igual a confirmação!</font>'; }
 		}
