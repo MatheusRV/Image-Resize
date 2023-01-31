@@ -1,7 +1,6 @@
 <?php
-	session_start();
-	require('config.php'); 
-	
+	require('../config.php'); 
+
 	$_SESSION["nivel"] = isset($_SESSION['nivel']) ? $_SESSION['nivel']  : 100;
 	$_SESSION["id_usuario"] = isset($_SESSION['id_usuario']) ? $_SESSION['id_usuario']  : 1;
 	$_SESSION['login'] = isset($_SESSION['login']) ? $_SESSION['login']  : 'matheus@gmail.com';
@@ -62,7 +61,7 @@
 	  <li><a href='?action=mostrarusuarios' class='button secondary large fi-widget size-60' style='padding:15px;'><label>config</label></a></li>
 	</ul></DIV>
 
-	<div class="small-12 columns"><?php	include('portal/portal_comandos1.php');	?></DIV>
+	<div class="small-12 columns"><?php	include('portal_comandos1.php');	?></DIV>
 
 </DIV>
 

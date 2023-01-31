@@ -38,7 +38,14 @@ Main contain START -->
 								<!-- Icon -->
 								<div class="icon-xl fs-1 bg-primary bg-opacity-10 rounded-3 text-primary"><i class="bi bi-file-earmark-text-fill"></i></div>
 								<!-- Content -->
-								<div class="ms-3"><h3>180</h3><h6 class="mb-0">Posts</h6></div>
+								<div class="ms-3"><h3>
+
+							<?php
+								$result = Db::selectAll('noticias');
+								$total = count($result);
+								echo $total;	?>
+									
+								</h3><h6 class="mb-0">Posts</h6></div>
 							</div>
 						</div>
 					</div>
@@ -111,6 +118,8 @@ Main contain START -->
 						$result = Db::selectLimited('noticias', 0, 5, 'id', 'DESC');
 						foreach($result as $key => $row){
 							$data=date('d/m/y', strtotime($row['pdate'])).' às '.date('H:i', strtotime($row['pdate']));
+							$URL_titulo = seoUrl($row['titulo']);	
+							$URL_tema = seoUrl($row['tema']);
 							echo "<tr>
 										<td><h6 class=\"course-title mt-2 mt-md-0 mb-0\"><a href=\"{$_SERVER['PHP_SELF']}?action=editarnews&id={$row['id']}\">{$row['titulo']}</a></h6></td>
 										<td>$data</td>
@@ -118,7 +127,7 @@ Main contain START -->
 										<td><div class=\"d-flex gap-2\">
                         <a href=\"{$_SERVER['PHP_SELF']}?action=editarnews&id={$row['id']}\" class=\"btn btn-light btn-round mb-0\" data-bs-toggle=\"tooltip\" data-bs-placement=\"top\" title=\"Editar\"><i class=\"bi bi-pencil-square\"></i></a>
                         <a href=\"#\" class=\"btn btn-light btn-round mb-0\" data-bs-toggle=\"tooltip\" data-bs-placement=\"top\" title=\"Deletar\"><i class=\"bi bi-trash\"></i></a>
-                        <a href=\"whatsapp://send?text=*{$row['titulo']}*+Veja+mais+em+https://www.canalicara.com/{$row['editoria']}/<?php echo $rowendereco; ?>-{$row['id']}.html\" class=\"btn btn-light btn-round mb-0\" data-bs-toggle=\"tooltip\" data-bs-placement=\"top\" title=\"Compartilhar\"><i class=\"bi bi-whatsapp\"></i></a>
+                        <a href=\"whatsapp://send?text=*{$row['titulo']}*+Veja+mais+em+https://www.canalicara.com/$URL_tema/$URL_titulo-{$row['id']}.html\" class=\"btn btn-light btn-round mb-0\" data-bs-toggle=\"tooltip\" data-bs-placement=\"top\" title=\"Compartilhar\"><i class=\"bi bi-whatsapp\"></i></a>
                       </div>
 										</td>
 									</tr>";
@@ -173,13 +182,15 @@ Main contain START -->
 				<?php
 						$result = Db::selectLimited('noticias', 0, 5, 'cont', 'DESC', 'pdate between now() - INTERVAL 7 DAY');
 						foreach($result as $key => $row){
-							$img=substr($row['imagem'], 26);
 							$data=date('d/m/y', strtotime($row['pdate'])).' às '.date('H:i', strtotime($row['pdate']));
+							$img=substr($row['imagem'], 26);							
+							$URL_titulo = seoUrl($row['titulo']);	
+							$URL_tema = seoUrl($row['tema']);
 							echo "<div class=\"col-12\">
 								<div class=\"d-flex align-items-center position-relative\">
 									<img class=\"w-60 rounded\" src=\"https://www.canalicara.com/imgtemp/?largura=300&altura=300&arquivo=$img\" alt=\"product\">
 									<div class=\"ms-3\">
-										<a href=\"#\" class=\"h6 stretched-link\">{$row['titulo']}</a>
+										<a href=\"https://www.canalicara.com/$URL_tema/$URL_titulo-{$row['id']}.html\" class=\"h6 stretched-link\" target=_blank>{$row['titulo']}</a>
 										<p class=\"small mb-0\">$data - {$row['cont']} visualizações</p>
 									</div>
 								</div>
@@ -433,12 +444,12 @@ function mostrarnews($pagina = 0)	{
 	if(isset($_SESSION['id_usuario']) && is_numeric($_SESSION['id_usuario'])){
 		if(($_SESSION["nivel"] >= "1") && ($_SESSION["nivel"] <= "49")){
 			echo '<!--LISTAR-NOTICIAS-->';
-			$result = Db::selectAllByVar('noticias', 'id_usuario', $_SESSION['id_usuario']);
+			$result = Db::selectVar('noticias', 'id_usuario', $_SESSION['id_usuario'], true);
 
-			if(is_array($result) && count($result) > 0){
+			if(!is_array($result) && count($result) == 0){
 				die('Não foi possível selecionar as notícias do usuário!');
-				$total = count($result);
 			}
+			$total = count($result);
 			$lpp = 50;
 			$paginas = ceil($total / $lpp);
 			$inicio = $pagina * $lpp;
@@ -451,21 +462,16 @@ function mostrarnews($pagina = 0)	{
 			echo '<!--SELECIONADO-->';
 			if($sql->rowCount() == 0){ die('Error '.$sql->errorInfo()[1].': '.$sql->errorInfo()[2]); }
 			else{ $result = $sql->fetchAll(); }
-
-			if(isset($_SESSION['news_result'])){
-				echo $_SESSION['news_result'];
-				unset($_SESSION['news_result']);
-			}
 			// ==EXIBIÇÃO==
-			echo "<div class='small-12 columns'><h3><a href='https://www.canalicara.com/portal/portal_admin.php?action=adicionarnews' class='button radius sucess marge fi-plus size-60'></a> Adicionar Notícias ".$_SESSION['id_usuario']."
+			echo "<div class='small-12 columns'><h3><a href='https://www.canalicara.com/portal_admin.php?action=adicionarnews' class='button radius sucess marge fi-plus size-60'></a> Adicionar Notícias ".$_SESSION['id_usuario']."
 				<ul class='button-group radius right'>
 					<li><a href='javascript:UPLOAD()' class='button secondary small fi-photo size-60' style='padding:10px;'><label>imagem</label></a></li>
-					<li><a href='https://www.canalicara.com/portal/portal_admin.php?action=mostrarnoticias_galerias' class='button secondary small fi-camera size-60' style='padding:10px;'><label>galeria</label></a></li>
-					<li><a href='https://www.canalicara.com/portal/portal_admin.php?action=mostrarnoticias_agencia' class='button secondary small fi-megaphone size-60' style='padding:10px;'><label>agência</label></a></li>
-					<li><a href='https://www.canalicara.com/portal/portal_admin.php?action=mostrarnoticias_blogs' class='button secondary small fi-social-blogger size-60' style='padding:10px;'><label>blogs</label></a></li>
-					<li><a href='https://www.canalicara.com/portal/portal_admin.php?action=mostrarnoticias_especiais' class='button secondary small fi-pricetag-multiple size-60' style='padding:10px;'><label>especias</label></a></li>
-					<li><a href='https://www.canalicara.com/portal/portal_admin.php?action=mostrarnoticias_temas' class='button secondary small fi-price-tag size-60' style='padding:10px;'><label>editorias</label></a></li>
-					<li><a href='https://www.canalicara.com/portal/portal_admin.php?action=mostrarnoticias_abrangencia' class='button secondary small fi-price-tag size-60' style='padding:10px;'><label>região</label></a></h3></li></ul></DIV>";
+					<li><a href='https://www.canalicara.com/portal_admin.php?action=mostrarnoticias_galerias' class='button secondary small fi-camera size-60' style='padding:10px;'><label>galeria</label></a></li>
+					<li><a href='https://www.canalicara.com/portal_admin.php?action=mostrarnoticias_agencia' class='button secondary small fi-megaphone size-60' style='padding:10px;'><label>agência</label></a></li>
+					<li><a href='https://www.canalicara.com/portal_admin.php?action=mostrarnoticias_blogs' class='button secondary small fi-social-blogger size-60' style='padding:10px;'><label>blogs</label></a></li>
+					<li><a href='https://www.canalicara.com/portal_admin.php?action=mostrarnoticias_especiais' class='button secondary small fi-pricetag-multiple size-60' style='padding:10px;'><label>especias</label></a></li>
+					<li><a href='https://www.canalicara.com/portal_admin.php?action=mostrarnoticias_temas' class='button secondary small fi-price-tag size-60' style='padding:10px;'><label>editorias</label></a></li>
+					<li><a href='https://www.canalicara.com/portal_admin.php?action=mostrarnoticias_abrangencia' class='button secondary small fi-price-tag size-60' style='padding:10px;'><label>região</label></a></h3></li></ul></DIV>";
 			echo "<div class='small-12 columns'>";
 			foreach ($result as $key => $row) {
 				$titulo = $row['titulo'];
@@ -475,24 +481,27 @@ function mostrarnews($pagina = 0)	{
 			}
 			// ==PAGINAÇÃO==
 			echo "</DIV><div class='small-12 columns' style='margin-top:35px;'><center><FONT class=links>\n";
-			if($pagina > 0) {
-				$menos = $pagina - 1;
-				$url = INCLUDE_PATH."portal_admin.php?action=mostrarnews&pagina=".$menos;
-				echo "<a href='$url'><FONT color=#808080>&laquo;&laquo;</a></FONT> ";
-			}
 			$atual = ($pagina + 1);
-			for($i = 0;$i<$paginas;$i++){
-				$pg = $i + 1;
-				if ($pg == $atual){
-					$pg = "<Font color=#000000><b>[".$pg."]</b></Font>";
-				}
-				$url = INCLUDE_PATH."portal_admin.php?action=mostrarnews&pagina=$i";
-				echo "<a href='$url'><Font color=#808080>$pg</Font></a> | ";
+        	if($pagina > 0){
+				$url = INCLUDE_PATH.'portal/portal_admin.php?action=mostrarnews&pagina='.($pagina-1);	
+				echo '<li class="page-item"><a class="page-link" href="'.$url.'" tabindex="-1" aria-disabled="true">Anterior</a></li>';
 			}
-			if($pagina < $paginas - 1){
-				$mais = $pagina + 1;
-				$url = INCLUDE_PATH."portal_admin.php?action=mostrarnews&pagina=$mais";
-				echo " <a href='$url'><FONT color=#808080>&raquo;&raquo;</FONT></a>";
+
+			for($i = 10; $i >= 0; $i--){
+				$pg = $atual + 5 - $i;
+				if($pg == $atual){
+					$url = INCLUDE_PATH.'portal/portal_admin.php?action=mostrarnews&pagina='.$pagina;
+					echo '<li class="page-item active"><a class="page-link" href="#">'.$atual.'</a></li>';
+				}
+				else if($pg > 0 && $pg <= $paginas){
+					$url = INCLUDE_PATH.'portal/portal_admin.php?action=mostrarnews&pagina='.($pg-1);
+					echo '<li class="page-item"><a class="page-link" href="'.$url.'">'.$pg.'</a></li>';
+				}
+			}
+
+			if($pagina < $paginas-1){
+				$url = INCLUDE_PATH.'portal/portal_admin.php?action=mostrarnews&pagina='.($atual);
+				echo '<li class="page-item"><a class="page-link" href="'.$url.'">Próxima</a></li>';
 			}
 			echo "</FONT></center></div><br><br>\n";
 		}
@@ -504,6 +513,7 @@ function mostrarnews($pagina = 0)	{
 			$total = count($result);
 			$paginas = ceil($total / $lpp);
 			$inicio = $pagina * $lpp;
+			$fim = $inicio + $lpp;
 			$query = "SELECT *, DATE_FORMAT(pdate, '%d/%m/%Y') as date FROM noticias ORDER BY pdate DESC LIMIT $inicio, $lpp";
 			$sql = MySql::connect()->prepare($query);
 			$sql->execute();
@@ -511,41 +521,93 @@ function mostrarnews($pagina = 0)	{
 			if($sql->rowCount() == 0){ die("Error: ".$sql->errorInfo()[2]); }
 			else{ $result = $sql->fetchAll(); }
 			// ==EXIBIÇÃO==
-			echo "<div class='small-12 columns'><h3><a href='https://www.canalicara.com/portal/portal_admin.php?action=adicionarnews' class='button radius sucess marge fi-plus size-60'></a> Adicionar Notícias
-				<ul class='button-group radius right'>
-					<li><a href='javascript:UPLOAD()' class='button secondary small fi-photo size-60' style='padding:10px;'><label>imagem</label></a></li>
-					<li><a href='https://www.canalicara.com/portal/portal_admin.php?action=mostrarnoticias_galerias' class='button secondary small fi-camera size-60' style='padding:10px;'><label>galeria</label></a></li>
-					<li><a href='https://www.canalicara.com/portal/portal_admin.php?action=mostrarnoticias_agencia' class='button secondary small fi-megaphone size-60' style='padding:10px;'><label>agência</label></a></li>
-					<li><a href='https://www.canalicara.com/portal/portal_admin.php?action=mostrarnoticias_blogs' class='button secondary small fi-social-blogger size-60' style='padding:10px;'><label>blogs</label></a></li>
-					<li><a href='https://www.canalicara.com/portal/portal_admin.php?action=mostrarnoticias_especiais' class='button secondary small fi-pricetag-multiple size-60' style='padding:10px;'><label>especias</label></a></li>
-					<li><a href='https://www.canalicara.com/portal/portal_admin.php?action=mostrarnoticias_temas' class='button secondary small fi-price-tag size-60' style='padding:10px;'><label>editorias</label></a></li>
-					<li><a href='https://www.canalicara.com/portal/portal_admin.php?action=mostrarnoticias_abrangencia' class='button secondary small fi-price-tag size-60' style='padding:10px;'><label>região</label></a></h3></li></ul></DIV>";
-			echo "<div class='small-12 columns'>";
-			foreach ($result as $key => $row){
-				$titulo = $row['titulo'];
-				$tema = $row['tema'];
-				echo "<div class='panel clearfix' style='padding:0; padding-left:10;'><a class='small button secondary fi-trash size-21 right alert' href=\"#\" data-reveal-id=\"myModal-{$row['id']}\"  style='margin-bottom:0'></a> <a href=\"{$_SERVER['PHP_SELF']}?action=editarnews&id={$row['id']}\"><p style='margin-top:10'><b>$tema</b>: $titulo</a></p></Div>
-				<div id=\"myModal-{$row['id']}\" class=\"reveal-modal\" data-reveal><h2>Deletar notícia?</h2><p class=\"lead\"><a href=\"{$_SERVER['PHP_SELF']}?action=deletarnews&id={$row['id']}\">confirmar exclusão de <b>$titulo</b></a></p><a class=\"close-reveal-modal\">&#215;</a></div>\n";
-			}
-			// ==PAGINAÇÃO==
-			echo "</DIV><div class='small-12 columns' style='margin-top:35px;'><center><FONT class=links>\n";
-			if($pagina > 0){
-				$menos = $pagina - 1;
-				$url = INCLUDE_PATH."portal_admin.php?action=mostrarnews&pagina=$menos";	
-				echo "<a href='$url'><FONT color=#808080>&laquo;&laquo;</a></FONT> ";
-			}
+			echo "<section class=\"py-4\">
+	<div class=\"container\">
+    <div class=\"row pb-4\">
+			<div class=\"col-12\">
+				<h1 class=\"mb-0 h2\">Mostrar notícias</h1>
+				<p class=\"mb-sm-0 text-center text-sm-start\">$inicio a $fim de $total posts</p>
+			</div>
+		</div>
+		<div class=\"row\">
+			<div class=\"col-12\">
+				<!-- Chart START -->
+				<div class=\"card border\">
+					<!-- Card body -->
+					<div class=\"card-body\">
+						<!-- Blog list table START -->
+						<div class=\"table-responsive border-0\">
+							<table class=\"table align-middle p-4 mb-0 table-hover table-shrink\">
+								<!-- Table head -->
+								<thead class=\"table-dark\">
+									<tr>
+										<th scope=\"col\" class=\"border-0 rounded-start\">Título</th>
+										<th scope=\"col\" class=\"border-0\">Data</th>
+										<th scope=\"col\" class=\"border-0\">Categoria</th>
+										<th scope=\"col\" class=\"border-0 rounded-end\">Ação</th>
+									</tr>
+								</thead>
+								<!-- Table body START -->
+								<tbody class=\"border-top-0\">";
+
+
+						foreach($result as $key => $row){
+							$data=date('d/m/y', strtotime($row['pdate'])).' às '.date('H:i', strtotime($row['pdate']));
+							/*$URL_titulo = seoUrl($row['titulo']);	
+							$URL_tema = seoUrl($row['tema']);*/
+							$URL_titulo = '';	
+							$URL_tema = '';
+							echo "<tr>
+										<td><h6 class=\"course-title mt-2 mt-md-0 mb-0\"><a href=\"{$_SERVER['PHP_SELF']}?action=editarnews&id={$row['id']}\">{$row['titulo']}</a></h6></td>
+										<td>$data</td>
+										<td><a href=\"#\" class=\"badge bg_{$row['tema']} mb-2\"><i class=\"fas fa-circle me-2 small fw-bold\"></i>{$row['tema']}</a></td>
+										<td><div class=\"d-flex gap-2\">
+                        <a href=\"{$_SERVER['PHP_SELF']}?action=editarnews&id={$row['id']}\" class=\"btn btn-light btn-round mb-0\" data-bs-toggle=\"tooltip\" data-bs-placement=\"top\" title=\"Editar\"><i class=\"bi bi-pencil-square\"></i></a>
+                        <a href=\"#\" class=\"btn btn-light btn-round mb-0\" data-bs-toggle=\"tooltip\" data-bs-placement=\"top\" title=\"Deletar\"><i class=\"bi bi-trash\"></i></a>
+                        <a href=\"whatsapp://send?text=*{$row['titulo']}*+Veja+mais+em+https://www.canalicara.com/$URL_tema/$URL_titulo-{$row['id']}.html\" class=\"btn btn-light btn-round mb-0\" data-bs-toggle=\"tooltip\" data-bs-placement=\"top\" title=\"Compartilhar\"><i class=\"bi bi-whatsapp\"></i></a>
+                      </div>
+										</td>
+									</tr>";
+					}
+				?>
+
+								</tbody>
+								<!-- Table body END -->
+							</table>
+						</div>
+						<!-- Blog list table END -->
+
+<?php // ==PAGINAÇÃO==
+
+      echo "<!-- Pagination -->
+        <nav class=\"mb-sm-0 d-flex justify-content-center\" aria-label=\"navigation\">
+        <ul class=\"pagination pagination-sm pagination-bordered mb-0\">";
 			$atual = ($pagina + 1);
-			for($i=0;$i<$paginas;$i++){
-				$pg = $i+1;
-				if ($pg == $atual){ $pg = "<Font color=#000000><b>[".$pg."]</b></Font>"; }
-				$url = INCLUDE_PATH."portal_admin.php?action=mostrarnews&pagina=$i";	echo "<a href='$url'><Font color=#808080>$pg</Font></a> | ";
+        	if($pagina > 0){
+				$url = INCLUDE_PATH.'portal/portal_admin.php?action=mostrarnews&pagina='.($pagina-1);	
+				echo '<li class="page-item"><a class="page-link" href="'.$url.'" tabindex="-1" aria-disabled="true">Anterior</a></li>';
 			}
+
+			for($i = 10; $i >= 0; $i--){
+				$pg = $atual + 5 - $i;
+				if($pg == $atual){
+					$url = INCLUDE_PATH.'portal/portal_admin.php?action=mostrarnews&pagina='.$pagina;
+					echo '<li class="page-item active"><a class="page-link" href="#">'.$atual.'</a></li>';
+				}
+				else if($pg > 0 && $pg <= $paginas){
+					$url = INCLUDE_PATH.'portal/portal_admin.php?action=mostrarnews&pagina='.($pg-1);
+					echo '<li class="page-item"><a class="page-link" href="'.$url.'">'.$pg.'</a></li>';
+				}
+			}
+
 			if($pagina < $paginas-1){
-				$mais = $pagina + 1;
-				$url = INCLUDE_PATH."portal_admin.php?action=mostrarnews&pagina=$mais";
-				echo " <a href='$url'><FONT color=#808080>&raquo;&raquo;</FONT></a>";
-			}	
-			echo "</FONT></center></div><br><br>\n";
+				$url = INCLUDE_PATH.'portal/portal_admin.php?action=mostrarnews&pagina='.($atual);
+				echo '<li class="page-item"><a class="page-link" href="'.$url.'">Próxima</a></li>';
+			}
+			echo "</ul>
+                </nav>
+              </div>
+              <!-- Pagination END -->\n";
 		}
 		else{	echo "Ops... você não tem acesso para isso!";	}
 	}
@@ -575,7 +637,7 @@ function adicionarnews(){
                 <!-- titulo -->
                 <div class="col-lg-8">
                   <div class="mb-3">
-                    <input required id="con-name" name="name" type="text" class="form-control" placeholder="Título">
+                    <input required id="con-name" name="titulo" type="text" class="form-control" placeholder="Título">
                   </div>
                 </div>
   
@@ -717,7 +779,7 @@ function adicionarnews(){
                 <!-- upload -->
                 <div class="col-12">
                   <div class="mb-3">
-                  	<!-- <IFRAME class="col-12" Style='HEIGHT: 58px' border=0 marginWidth=0 marginHeight=0 src="<?=INCLUDE_PATH?>portal_upload.php?action=upload&diretorio=httpdocs/upload/noticias/" frameBorder=no scrolling=no></IFRAME> -->
+                  	<IFRAME class="col-12" Style='HEIGHT: 58px' border=0 marginWidth=0 marginHeight=0 src="https://www.canalicara.com/portal_upload.php?action=upload&diretorio=httpdocs/upload/noticias/" frameBorder=no scrolling=no></IFRAME>
                   </div>
                 </div>
 
@@ -820,6 +882,85 @@ function deletarnews($id){
 		}
 	}
 	else{	echo "Ops... você não tem acesso para isso!";	}
+}
+
+function submitnews($p){
+	if(isset($p['submit']) && isset($p['type'])){
+		$type = $p['type'];
+		if($p['type'] == 'new' || $p['type'] == 'edit'){
+			if($_SESSION["nivel"] >= "1"){
+				$dataSend = array();
+
+				if($type == 'new'){
+					$dataSend[] = $p['pdate_data'].' '.$p['pdate_hora'];
+					$dataSend[] = $p['titulo'];
+					$dataSend[] = $p['resumo'];
+					$dataSend[] = $p['tema'];
+					$dataSend[] = $p['abrangencia'];
+					$dataSend[] = $p['especial'];
+					$dataSend[] = $p['agencia'];
+					$dataSend[] = $p['blog'];
+					$dataSend[] = "";
+					$dataSend[] = $p['autor'];
+					$dataSend[] = $p['texto'];
+					$dataSend[] = $p['imagem'];
+					$dataSend[] = $p['imagem_exibicao'];
+					$dataSend[] = $p['imagem_autor'];
+					$dataSend[] = "";
+					$dataSend[] = 0;
+					$dataSend[] = $p['galeria'];
+					$dataSend[] = $p['video'];
+					$dataSend[] = $p['video_youtube'];
+					$dataSend[] = $p['agendar'];
+					$dataSend[] = $p['frase_texto'];
+					$dataSend[] = $p['frase_autor'];
+					$dataSend[] = $_SESSION['id_usuario'];
+
+					if(Db::insert('noticias', $dataSend)){
+						$lastId = MySql::connect()->lastInsertId();
+						echo "<div class=\"alert alert-success text-center\" role=\"alert\">Notícia ".$lastId." enviada com sucesso!</div>";
+					}
+				}
+				else if($type == 'edit'){
+					$dataSend['id'] = $p['id'];
+					$dataSend['pdate'] = $p['pdate_data'].' '.$p['pdate_hora'];
+					$dataSend['titulo'] = $p['titulo'];
+					$dataSend['resumo'] = $p['resumo'];
+					$dataSend['tema'] = $p['tema'];
+					$dataSend['abrangencia'] = $p['abrangencia'];
+					$dataSend['especial'] = $p['especial'];
+					$dataSend['agencia'] = $p['agencia'];
+					$dataSend['blog'] = $p['blog'];
+					$dataSend['icone'] = "";
+					$dataSend['autor'] = $p['autor'];
+					$dataSend['texto'] = $p['texto'];
+					$dataSend['imagem'] = $p['imagem'];
+					$dataSend['imagem_exibicao'] = $p['imagem_exibicao'];
+					$dataSend['imagem_autor'] = $p['imagem_autor'];
+					$dataSend['atualizacao'] = $p['atualizacao'];
+					$dataSend['galeria'] = $p['galeria'];
+					$dataSend['video'] = $p['video'];
+					$dataSend['video_youtube'] = $p['video_youtube'];
+					$dataSend['agenda'] = $p['agenda'];
+					$dataSend['frase_texto'] = $p['frase_texto'];
+					$dataSend['frase_autor'] = $p['frase_autor'];
+					$dataSend['id_usuario'] = $_SESSION['id_usuario'];
+
+					if(!Db::update('noticias', $dataSend)){
+						die("Error in update");
+					}
+					else{
+						echo "<div class=\"alert alert-success text-center\" role=\"alert\">Notícia editada com sucesso</div>";
+					}
+				}
+			}
+			else{ echo "<div class=\"alert alert-danger text-center\" role=\"alert\">Você não possui permissão para submeter este formulário!</div>"; }
+		}
+		else{ echo "<div class=\"alert alert-warning text-center\" role=\"alert\">Sorry! Não foi possível identificar o tipo do formulário!</div>"; }
+	}
+	else{
+		echo "<div class=\"alert alert-warning text-center\" role=\"alert\">Ops! Nenhum formulário foi encontrado!</div>";
+	}
 }
 
 function editarnews($id){
@@ -1047,11 +1188,7 @@ function editarnews($id){
 
 //MEU-USUARIO=============================================================
 
-function usuario(){
-	if(isset($_SESSION['user_result'])){
-		echo $_SESSION['user_result'];
-		unset($_SESSION['user_result']);
-	}?>
+function usuario(){?>
 	<div class='small-12 columns'><h3>Editar usuário <?=$_SESSION['login']?></h3></DIV>
 	<form method="post">
 		<input type="hidden" name="id" value="<?=$_SESSION['id_usuario']?>">
@@ -1073,6 +1210,29 @@ function usuario(){
 	</form>
 	<?php
 }
+
+function submitPassword($p){
+	$db = Db::selectVar('admin_usuarios', 'id', $_SESSION['id_usuario']);
+	if(is_array($db) && md5($p['senha']) == $db['senha']){
+		if($p['novasenha1'] == $p['novasenha2']){
+			if($p['novasenha1'] != $p['senha']){
+				$dataSend = array('nome' => $p['novonome'], 'senha' => md5($p['novasenha1']), 'id' => $p['id']);
+				print_r($dataSend);
+				if(Db::update('admin_usuarios', $dataSend)){
+					$_SESSION['nome_usuario'] = $p['novonome'];
+					echo '<font face="verdana" size="2">Editado com sucesso</font>';
+				}
+			}
+			else{ echo '<font face="verdana" size="2">Sua nova senha não pode ser igual a sua senha atual!</font>'; }
+		}
+		else{ echo '<font face="verdana" size="2">Sua nova senha não é igual a confirmação!</font>'; }
+	}
+	else{ echo '<font face="verdana" size="2">Username e/ou senha incorretos!</font>'; }
+}
+
+
+if(isset($_POST['submit'])){submitnews($_POST); $_POST = array();}
+else if(isset($_POST['submitPass'])){submitPassword($_POST); $_POST = array();}
 
 if(isset($_GET['action'])){
 	if($_GET['action'] == 'ferramentas_facebook'){ ferramentas_facebook(); }

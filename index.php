@@ -1,10 +1,11 @@
 <?php
 	require('config.php'); 
 
-	$_SESSION["nivel"] = 100;
-	$_SESSION["id_usuario"] = 1;
-	$_SESSION["nome_usuario"] = 'Matheus Reus Vieira';
-
+	$_SESSION["nivel"] = isset($_SESSION['nivel']) ? $_SESSION['nivel']  : 100;
+	$_SESSION["id_usuario"] = isset($_SESSION['id_usuario']) ? $_SESSION['id_usuario']  : 1;
+	$_SESSION['login'] = isset($_SESSION['login']) ? $_SESSION['login']  : 'matheus@gmail.com';
+	$_SESSION["nome_usuario"] = isset($_SESSION['nome_usuario']) ? $_SESSION['nome_usuario']  : 'Matheus Reus Vieira';
+	include('portal_submit.php');
 ?>
 
 <html><head><title>Canal Içara - O canal da galera!</title>
@@ -42,7 +43,7 @@
 
 <div class="row">
 
-	<div class="small-12 columns" style="margin-bottom:5px; margin-top: 15px"><font class='link_h3 right'>Olá <?php echo $_SESSION["nome_usuario"] ?>! <a href='portal_logout.php' class='button secondary small fi-power size-30' style='padding:5px;'> SAIR</a></font></DIV>
+	<div class="small-12 columns" style="margin-bottom:5px; margin-top: 15px"><font class='link_h3 right'>Olá <?=$_SESSION["nome_usuario"]?>! <a href='portal_logout.php' class='button secondary small fi-power size-30' style='padding:5px;'> SAIR</a></font></DIV>
 
 	<div class="small-12 columns" style="margin-bottom:25px"><ul class="button-group round">
 	  <li><a href='?action=mostrarnews' class='button secondary large fi-clipboard-pencil size-60' style='padding:15px;'><label>notícias</label></a></li>

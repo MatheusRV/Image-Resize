@@ -1,21 +1,14 @@
-<?php
-	session_start();
-	require('config.php'); 
-	
-	$_SESSION["nivel"] = isset($_SESSION['nivel']) ? $_SESSION['nivel']  : 100;
-	$_SESSION["id_usuario"] = isset($_SESSION['id_usuario']) ? $_SESSION['id_usuario']  : 1;
-	$_SESSION['login'] = isset($_SESSION['login']) ? $_SESSION['login']  : 'matheus@gmail.com';
-	$_SESSION["nome_usuario"] = isset($_SESSION['nome_usuario']) ? $_SESSION['nome_usuario']  : 'Matheus Reus Vieira';
+<?php	/*require "portal_autenticacao.php";						// Verificador de sessão*/
+			require('config.php');		// Conexão com o banco de dados	?>
 
-?>
 
-<html><head><title>Canal IÃ§ara - O canal da galera!</title>
+<html><head><title>Canal Içara - O canal da galera!</title>
 <!DOCTYPE html PUBLIC><html xmlns="http://www.w3.org/1999/xhtml">
 <!--[if IE 9]><html class="lt-ie10" lang="pt-br" > <![endif]-->
-<HEAD><META charset="utf-8">
+<HEAD><META charset="iso-8859-1">
 <META HTTP-EQUIV="REFRESH" CONTENT="3600">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Canal IÃ§ara - curta essa cidade!</title>
+<title>Canal Içara - curta essa cidade!</title>
 
 <link rel="stylesheet" href="https://www.canalicara.com/portal/css/normalize.css">
 <link rel="stylesheet" href="https://www.canalicara.com/portal/css/foundation.css">
@@ -44,14 +37,14 @@
 
 <div class="row">
 
-	<div class="small-12 columns" style="margin-bottom:5px; margin-top: 15px"><font class='link_h3 right'>OlÃ¡ <?php echo $_SESSION["nome_usuario"] ?>! <a href='portal_logout.php' class='button secondary small fi-power size-30' style='padding:5px;'> SAIR</a></font></DIV>
+	<div class="small-12 columns" style="margin-bottom:5px; margin-top: 15px"><font class='link_h3 right'>Olá <?php echo $_SESSION["nome_usuario"] ?>! <a href='portal_logout.php' class='button secondary small fi-power size-30' style='padding:5px;'> SAIR</a></font></DIV>
 
 	<div class="small-12 columns" style="margin-bottom:25px"><ul class="button-group round">
-	  <li><a href='?action=mostrarnews' class='button secondary large fi-clipboard-pencil size-60' style='padding:15px;'><label>notÃ­cias</label></a></li>
+	  <li><a href='?action=mostrarnews' class='button secondary large fi-clipboard-pencil size-60' style='padding:15px;'><label>notícias</label></a></li>
 	  <li><a href='?action=enquete' class='button secondary large fi-graph-pie size-60' style='padding:15px;'><label>Enquetes</label></a></li>
-	  <li><a href='?action=mostrarpaginas' class='button secondary large fi-page-copy size-60' style='padding:15px;'><label>pÃ¡ginas</label></a></li>
+	  <li><a href='?action=mostrarpaginas' class='button secondary large fi-page-copy size-60' style='padding:15px;'><label>páginas</label></a></li>
 	  <li><a href='?action=mostrarphoto_datas' class='button secondary large fi-calendar size-60' style='padding:15px;'><label>datas</label></a></li>
-	  <li><a href='?action=mostrarmultimidia_photomemorias' class='button secondary large fi-layout size-60' style='padding:15px;'><label>MemÃ³rias</label></a></li>
+	  <li><a href='?action=mostrarmultimidia_photomemorias' class='button secondary large fi-layout size-60' style='padding:15px;'><label>Memórias</label></a></li>
 	  <li><a href='?action=mostrarentretenimento_imagens' class='button secondary large fi-camera size-60' style='padding:15px;'><label>bizarras</label></a></li>
 	  <li><a href='?action=mostrartecnologia_wallpapers' class='button secondary large fi-photo size-60' style='padding:15px;'><label>wallpapers</label></a></li>
 	  <li><a href='?action=mostrarlinks' class='button secondary large fi-link size-60' style='padding:15px;'><label>links</label></a></li>
@@ -62,7 +55,7 @@
 	  <li><a href='?action=mostrarusuarios' class='button secondary large fi-widget size-60' style='padding:15px;'><label>config</label></a></li>
 	</ul></DIV>
 
-	<div class="small-12 columns"><?php	include('portal/portal_comandos1.php');	?></DIV>
+	<div class="small-12 columns"><?php	include('portal_comandos.php');	?></DIV>
 
 </DIV>
 

@@ -22,14 +22,6 @@
       return $sql->fetchAll();
     }
 
-    public static function selectAllByVar($table, $var, $condition, $elOrder = null, $order = null){
-      $sql = MySql::connect()->prepare("SELECT * FROM `$table` WHERE `$var` = ?");
-      $sql->execute([$condition]);
-      $sql = $sql->fetchAll();
-
-      return $sql;
-    }
-
     public static function selectId($table, $id){
       $sql = MySql::connect()->prepare("SELECT * FROM `$table` WHERE id = ? LIMIT 1");
       $sql->execute([$id]);
@@ -39,25 +31,49 @@
       return $sql;
     }
 
-    public static function selectVar($table, $var, $condition){
-      $sql = MySql::connect()->prepare("SELECT * FROM `$table` WHERE `$var` = ? LIMIT 1");
+    public static function selectVar($table, $var, $condition, $all = false){
+      if($all == false){ $query = "SELECT * FROM `$table` WHERE `$var` = ? LIMIT 1"; }
+      else{ $query = "SELECT * FROM `$table` WHERE `$var` = ?"; }
+
+      $sql = MySql::connect()->prepare($query);
       $sql->execute([$condition]);
 
-      $sql = $sql->fetch();
+      $sql = $all == false ? $sql->fetch() : $sql->fetchAll();
 
       return $sql;
     }
 
-    public static function selectLimited($table, $start, $end, $elOrder = null, $order = null){
-       $query = "SELECT * FROM `$table`";
+    public static function selectLimited($table, $start, $end, $elOrder = null, $order = null, $condition = null){
+      $query = "SELECT * FROM `$table`";
+
+      if($condition != null){
+        if($condition != null && is_array($condition)){
+          $query .= " WHERE ";
+          $dataSend = array();
+          $where = '';
+          foreach($condition as $k => $v){
+            $where .= $where != '' ? 'AND ' : '';
+            if(is_array($v)){
+              $where .= $where != '' ? ' AND '.$k.' = ?' : $k.' = ?';
+              $dataSend[] = $v;
+            }
+            else{ $where .= $v; }
+          }
+          $query .= $where;
+        }
+        elseif(is_string($condition) && $condition != ''){
+          $query .= " WHERE ".$condition;
+        }
+      }
 
       if($order != null && $elOrder != null){
         $query .= " ORDER BY $elOrder $order";
       }
-
       $query .= " LIMIT $start, $end";
+
       $sql = MySql::connect()->prepare($query);
-      $sql->execute();
+      if(isset($dataSend) && count($dataSend) > 0){ $sql->execute($dataSend); }
+      else{ $sql->execute(); }
 
       return $sql->fetchAll();
     }

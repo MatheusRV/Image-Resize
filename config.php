@@ -1,15 +1,15 @@
 <?php
   /*----------GENERAL----------*/
-  /*session_start();
+  session_start();
   ob_start();
-*/
+
   date_default_timezone_set('America/Sao_Paulo');
   /*------------------------------*/
 
 
   /*----------CONSTANTS----------*/
 
-  define('INCLUDE_PATH','http://localhost/Testes/Image-Resize/');
+  define('INCLUDE_PATH','http://localhost/Ideias/Image-Resize/');
   define('DIR',__DIR__); /*/
   
   /*------------------------------*/
