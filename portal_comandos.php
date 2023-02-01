@@ -1201,7 +1201,7 @@ function submitnews($p){
 					$dataSend[] = $p['frase_autor'];
 					$dataSend[] = $_SESSION['id_usuario'];
 
-					if(!Db::insert('noticias', $dataSend)){
+					if(Db::insert('noticias', $dataSend)){
 						$lastId = MySql::connect()->lastInsertId();
 						$_SESSION['news_result'] = '<font face="verdana" size="2">Notícia '.$lastId.' enviada com sucesso!</font>';
 					}
@@ -1235,16 +1235,16 @@ function submitnews($p){
 						die("Error in update");
 					}
 					else{
-						$_SESSION['news_result'] = "<div class=\"alert alert-success text-center\" role=\"alert\">Notícia editada com sucesso</div>";
+						$_SESSION['news_result'] = '<div class="alert alert-success text-center" role="alert">Notícia editada com sucesso</div>';
 					}
 				}
 			}
-			else{ $_SESSION['news_result'] = "<div class=\"alert alert-danger text-center\" role=\"alert\">Você não possui permissão para submeter este formulário!</div>"; }
+			else{ $_SESSION['news_result'] = '<div class="alert alert-danger text-center" role="alert">Você não possui permissão para submeter este formulário!</div>'; }
 		}
-		else{ $_SESSION['news_result'] = "<div class=\"alert alert-warning text-center\" role=\"alert\">Sorry! Não foi possível identificar o tipo do formulário!</div>"; }
+		else{ $_SESSION['news_result'] = '<div class="alert alert-warning text-center" role="alert">Sorry! Não foi possível identificar o tipo do formulário!</div>'; }
 	}
 	else{
-		$_SESSION['news_result'] = "<div class=\"alert alert-warning text-center\" role=\"alert\">Ops! Nenhum formulário foi encontrado!</div>";
+		$_SESSION['news_result'] = '<div class="alert alert-warning text-center" role="alert">Ops! Nenhum formulário foi encontrado!</div>';
 	}
 }
 
@@ -1255,7 +1255,6 @@ function submitPassword($p){
 			if(strlen($p['novasenha1']) >= 6){
 				if($p['novasenha1'] != $p['senha']){
 					$dataSend = array('nome' => $p['novonome'], 'senha' => md5($p['novasenha1']), 'id' => $p['id']);
-					print_r($dataSend);
 					if(Db::update('admin_usuarios', $dataSend)){
 						$_SESSION['nome_usuario'] = $p['novonome'];
 						$_SESSION['user_result'] = '<font face="verdana" size="2">Editado com sucesso</font>';
