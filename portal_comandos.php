@@ -2,7 +2,7 @@
 
 	if (strstr($_SERVER["PHP_SELF"], "/admin/"))  die ("<html><head><title>Error</title></head><body scroll=\"no\"><BR><BR><center><font face=\"Verdana\" size=\"1\">Acesso negado!</font></center></body></html>");
 
-	include "2023_pagesconfig_functions.php";
+	//include "2023_pagesconfig_functions.php";
 
 	function index()	{
 		echo "<section class=\"py-4\">
@@ -132,7 +132,7 @@ Main contain START -->
 				<?php
 						$result = Db::selectLimited('noticias', 0, 10, 'id', 'DESC');
 						foreach($result as $key => $row){
-							$data=date('d/m/y', strtotime($row['pdate'])).' às '.date('H:i', strtotime($row['pdate']));
+							$data=date('d/m/y', strtotime($row['pdate'])).' | '.date('H:i', strtotime($row['pdate']));
 							echo "<tr>
 										<td><h6 class=\"course-title mt-2 mt-md-0 mb-0\"><a href=\"{$_SERVER['PHP_SELF']}?action=editarnews&id={$row['id']}\">{$row['titulo']}</a></h6></td>
 										<td>$data</td>
@@ -199,7 +199,7 @@ Main contain START -->
 			if($sql->rowCount() == 0){ die("Error: ".$sql->errorInfo()[2]); }
 			else{ $result = $sql->fetchAll(); }
 						foreach($result as $key => $row){
-							$data=date('d/m/y', strtotime($row['pdate'])).' às '.date('H:i', strtotime($row['pdate']));
+							$data=date('d/m/y', strtotime($row['pdate'])).' | '.date('H:i', strtotime($row['pdate']));
 							$img=substr($row['imagem'], 26);
 							$URL_titulo = seoUrl($row['titulo']);	
 							$URL_tema = seoUrl($row['tema']);
@@ -566,7 +566,7 @@ function mostrarnews($pagina = 0)	{
 
 
 						foreach($result as $key => $row){
-							$data=date('d/m/y', strtotime($row['pdate'])).' às '.date('H:i', strtotime($row['pdate']));
+							$data=date('d/m/y', strtotime($row['pdate'])).' | '.date('H:i', strtotime($row['pdate']));
 							$URL_titulo = seoUrl($row['titulo']);	
 							$URL_tema = seoUrl($row['tema']);
 							echo "<tr>
@@ -597,24 +597,24 @@ function mostrarnews($pagina = 0)	{
         <ul class=\"pagination pagination-sm pagination-bordered mb-0\">";
 			$atual = ($pagina + 1);
         	if($pagina > 0){
-				$url = 'http://www.canalicara.com/portal_admin.php?action=mostrarnews&pagina='.($pagina-1);	
+				$url = 'https://www.canalicara.com/portal_admin.php?action=mostrarnews&pagina='.($pagina-1);	
 				echo '<li class="page-item"><a class="page-link" href="'.$url.'" tabindex="-1" aria-disabled="true">Anterior</a></li>';
 			}
 
 			for($i = 10; $i >= 0; $i--){
 				$pg = $atual + 5 - $i;
 				if($pg == $atual){
-					$url = 'http://www.canalicara.com/portal_admin.php?action=mostrarnews&pagina='.$pagina;
+					$url = 'https://www.canalicara.com/portal_admin.php?action=mostrarnews&pagina='.$pagina;
 					echo '<li class="page-item active"><a class="page-link" href="#">'.$atual.'</a></li>';
 				}
 				else if($pg > 0 && $pg <= $paginas){
-					$url = 'http://www.canalicara.com/portal_admin.php?action=mostrarnews&pagina='.($pg-1);
+					$url = 'https://www.canalicara.com/portal_admin.php?action=mostrarnews&pagina='.($pg-1);
 					echo '<li class="page-item"><a class="page-link" href="'.$url.'">'.$pg.'</a></li>';
 				}
 			}
 
 			if($pagina < $paginas-1){
-				$url = 'http://www.canalicara.com/portal_admin.php?action=mostrarnews&pagina='.($atual);
+				$url = 'https://www.canalicara.com/portal_admin.php?action=mostrarnews&pagina='.($atual);
 				echo '<li class="page-item"><a class="page-link" href="'.$url.'">Próxima</a></li>';
 			}
 			echo "</ul>
@@ -939,7 +939,8 @@ function editarnews($id){
 <section class="py-4">
 	<div class="container">
     <div class="row pb-4">
-			<div class="col-12"><h1 class="mb-0 h2">Editar notícia  <?= $id ?></h1></div>
+			<div class="col-12"><h1 class="mb-0 h2">Editar notícia
+			<span class="badge bg-primary bg-opacity-10 text-primary"><?= $id ?></span></h1></div>
 		</div>
 
 		<div class="row">
@@ -1139,6 +1140,115 @@ function editarnews($id){
 }
 
 
+//CIDADE-INDICADORES=====================================================
+
+function ADD_cidindicadores(){
+  if(isset($_SESSION['cidadeindicadores_result'])){
+		echo $_SESSION['cidadeindicadores_result'];
+		unset($_SESSION['cidadeindicadores_result']);
+	}
+	if($_SESSION["nivel"] >= "1")	{?>
+
+<section class="py-4">
+	<div class="container">
+    	<div class="row pb-4">
+			<div class="col-12">
+				<h1 class="mb-0 h2"><i class="bi bi-bar-chart-line-fill primary"></i> Adicionar indicador 
+
+				<?php
+						$result = Db::selectLimited('cidade_indicadores', 0, 1, 'id', 'DESC');
+						foreach($result as $key => $row){
+							$id = $row['id'];
+							$newID = $id + 1;
+						echo "<span class=\"badge bg-primary bg-opacity-10 text-primary\">$newID</span>";
+					}	?>
+
+				</h1>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-12">
+				<!-- Chart START -->
+				<div class="card border">
+					<!-- Card body -->
+					<div class="card-body">
+    			        <!-- Form START -->
+        	    		<form action="<?php $_SERVER['PHP_SELF'] ?>" method="post">
+    	          			<!-- Main form -->
+	              			<div class="row">
+
+ 			            	   <!-- titulo -->
+            				   <div class="col-lg-8">
+                	  				<div class="mb-3">
+            	        				<input required id="con-name" name="titulo" type="text" class="form-control" placeholder="Indicador numérico">
+        	          				</div>
+    	            			</div>
+  
+                  				<!-- data -->
+                				<div class="col-lg-2">
+        	          				<div class="mb-3">
+            	      	 				<input type="date" id="date" class="form-control" type="date" name="pdate_data" placeholder="data" required="" value="<?= date("Y-m-d") ?>">
+ 	                 				</div>
+    	            			</div>
+
+			        	        <!-- hora -->
+            				    <div class="col-lg-2">
+            	      				<div class="mb-3">
+        	          	 				<input type="time" id="time" class="form-control" type="time" name="pdate_hora" placeholder="hora" required="" value="<?= date("H:i") ?>">
+    	              				</div>
+	                			</div>
+
+								<!-- editoria -->
+        						<div class="col-lg-3">
+         							<div class="mb-3">
+          								<select name="categoria" required="" class="form-select"><option value="">categoria</option>
+											<option value="Balança Comercial">Balança comercial</option>
+											<option value="CAD Único">CAD Único</option>
+											<option value="Eleitores">Eleitores</option>
+											<option value="Empregos">Empregos</option>
+											<option value="Empresas">Empresas</option>
+											<option value="IDEB - 5º ano">IDEB - 5º ano</option>
+											<option value="IDEB - 9º ano">IDEB - 9º ano</option>
+											<option value="IDEB - Ensino Médio">IDEB - Ensino Médio</option>
+											<option value="IDHM">IDHM</option>
+											<option value="PIB">PIB</option>
+											<option value="População">População</option>
+										</select>
+       								</div>
+    	    					</div>
+ 
+								<!-- info adicional -->
+									<div class="col-lg-9">
+                						<div class="mb-3">
+                  							<input class="form-control" type="text" name="texto" placeholder="informação adicional" value=""/>
+                  						</div>
+                					</div>
+
+                				<!-- Create post button -->
+               						<div class="col-md-12 text-start">
+                 						<input class="btn btn-primary w-100" name="submitCidIndicadores" type="submit" value="Inserir indicador"/>
+                  					<input type="hidden" name="type" value="new" />
+                					</div>
+              				</div>
+            			</form>
+           				<!-- Form END -->
+
+					</div>
+				</div>
+				<!-- Chart END -->
+
+			</div>
+  	  	</div>
+	</div>
+</section>
+
+		<?php
+	}
+	else { echo "Ops... você não tem acesso para isso!"; }
+}
+
+
 //MEU-USUARIO=============================================================
 
 function usuario(){
@@ -1146,25 +1256,51 @@ function usuario(){
 		echo $_SESSION['user_result'];
 		unset($_SESSION['user_result']);
 	}?>
-	<div class='small-12 columns'><h3>Editar usuário <?=$_SESSION['login']?></h3></DIV>
-	<form method="post">
-		<input type="hidden" name="id" value="<?=$_SESSION['id_usuario']?>">
-		<div class="small-12 medium-6 columns">
-			<input type="text" name="novonome" placeholder="nome" required="" value="<?=$_SESSION['nome_usuario']?>" />
-		</div>
-		<div class="small-12 medium-6 columns">
-			<input type="password" name="senha" placeholder="senha atual" />
-		</div>
-		<div class="small-12 medium-6 columns">
-			<input type="password" name="novasenha1" placeholder="nova senha" required="" />
-		</div>
-		<div class="small-12 medium-6 columns">
-			<input type="password" name="novasenha2" placeholder="nova senha" required="" />
-		</div>
-		<div class="small-12 columns">
-			<input class="button expand" type="submit" name="submitPass" value="ENVIAR" />
-		</div>
-	</form>
+
+	<section>
+	<div class="container">
+		<div class="row">
+      <div class="col-md-10 col-lg-8 col-xl-6 mx-auto">
+        <div class="p-4 p-sm-5 bg-primary bg-opacity-10 rounded">
+					<h2>Painel de controle!</h2>
+					<!-- Form START -->
+					<form class="mt-4" method="post">
+						<input type="hidden" name="id" value="<?=$_SESSION['id_usuario']?>"><fieldset>
+						<!-- Email -->
+						<div class="mb-3">
+							<label class="form-label" for="exampleInputEmail1">Novo nome</label>
+							<input type="text" name="novonome" class="form-control" placeholder="nome" required="" value="<?=$_SESSION['nome_usuario']?>">
+						</div>
+						<!-- Password -->
+						<div class="mb-3">
+							<label class="form-label" for="exampleInputPassword1">Senha atual</label>
+							<input type="password" name="senha" placeholder="senha atual" class="form-control" placeholder="*********">
+						</div>
+						<!-- NEW Password 1-->
+						<div class="mb-3">
+							<label class="form-label" for="exampleInputPassword1">Nova senha</label>
+							<input type="password" name="novasenha1" placeholder="nova senha" class="form-control" placeholder="*********">
+						</div>		
+						<!-- NEW Password 2-->
+						<div class="mb-3">
+							<label class="form-label" for="exampleInputPassword1">Confirmação da nova senha</label>
+							<input type="password" name="novasenha2" placeholder="nova senha" class="form-control" placeholder="*********">
+						</div>						
+						<!-- Button -->
+						<div class="row align-items-center">
+							<div class="col-sm-4">
+								<button type="submit" name="submitPass" class="btn btn-success">Enviar</button>
+							</div>
+						</div>
+					</fieldset></form>
+					<!-- Form END -->
+					<hr>
+					<!-- Social-media btn -->
+        </div>
+      </div>
+    </div>
+	</div>
+</section>
 	<?php
 }
 
@@ -1203,7 +1339,7 @@ function submitnews($p){
 
 					if(Db::insert('noticias', $dataSend)){
 						$lastId = MySql::connect()->lastInsertId();
-						$_SESSION['news_result'] = '<font face="verdana" size="2">Notícia '.$lastId.' enviada com sucesso!</font>';
+						$_SESSION['news_result'] = "<div class=\"alert alert-success text-center\" role=\"alert\">Notícia <b>$lastId</b> inserida com sucesso</div>";
 					}
 				}
 				else if($type == 'edit'){
@@ -1235,16 +1371,62 @@ function submitnews($p){
 						die("Error in update");
 					}
 					else{
-						$_SESSION['news_result'] = '<div class="alert alert-success text-center" role="alert">Notícia editada com sucesso</div>';
+						$_SESSION['news_result'] = "<div class=\"alert alert-success text-center\" role=\"alert\">Notícia editada com sucesso</div>";
 					}
 				}
 			}
-			else{ $_SESSION['news_result'] = '<div class="alert alert-danger text-center" role="alert">Você não possui permissão para submeter este formulário!</div>'; }
+			else{ $_SESSION['news_result'] = "<div class=\"alert alert-danger text-center\" role=\"alert\">Você não possui permissão para submeter este formulário!</div>"; }
 		}
-		else{ $_SESSION['news_result'] = '<div class="alert alert-warning text-center" role="alert">Sorry! Não foi possível identificar o tipo do formulário!</div>'; }
+		else{ $_SESSION['news_result'] = "<div class=\"alert alert-warning text-center\" role=\"alert\">Sorry! Não foi possível identificar o tipo do formulário!</div>"; }
 	}
 	else{
-		$_SESSION['news_result'] = '<div class="alert alert-warning text-center" role="alert">Ops! Nenhum formulário foi encontrado!</div>';
+		$_SESSION['news_result'] = "<div class=\"alert alert-warning text-center\" role=\"alert\">Ops! Nenhum formulário foi encontrado!</div>";
+	}
+}
+
+
+
+function submitcidade_indicadores($p){
+	if(isset($p['submitCidIndicadores']) && isset($p['type'])){
+		$type = $p['type'];
+		if($p['type'] == 'new' || $p['type'] == 'edit'){
+			if($_SESSION["nivel"] >= "1"){
+				$dataSend = array();
+
+				if($type == 'new'){
+					$dataSend[] = $p['pdate_data'].' '.$p['pdate_hora'];
+					$dataSend[] = $p['titulo'];
+					$dataSend[] = $p['categoria'];
+					$dataSend[] = $p['texto'];
+					$dataSend[] = $_SESSION['id_usuario'];
+
+					if(Db::insert('cidade_indicadores', $dataSend)){
+						$lastId = MySql::connect()->lastInsertId();
+						$_SESSION['cidadeindicadores_result'] = "<div class=\"alert alert-success text-center\" role=\"alert\">Indicador <b>$lastId</b> inserido com sucesso</div>";
+					}
+				}
+				else if($type == 'edit'){
+					$dataSend['id'] = $p['id'];
+					$dataSend['pdate'] = $p['pdate_data'].' '.$p['pdate_hora'];
+					$dataSend['titulo'] = $p['titulo'];
+					$dataSend['categoria'] = $p['categoria'];
+					$dataSend['texto'] = $p['texto'];
+					$dataSend['id_usuario'] = $_SESSION['id_usuario'];
+
+					if(!Db::update('cidade_indicadores', $dataSend)){
+						die("Error in update");
+					}
+					else{
+						$_SESSION['cidadeindicadores_result'] = "<div class=\"alert alert-success text-center\" role=\"alert\">Indicador editado com sucesso</div>";
+					}
+				}
+			}
+			else{ $_SESSION['cidadeindicadores_result'] = "<div class=\"alert alert-danger text-center\" role=\"alert\">Você não possui permissão para submeter este formulário!</div>"; }
+		}
+		else{ $_SESSION['cidadeindicadores_result'] = "<div class=\"alert alert-warning text-center\" role=\"alert\">Sorry! Não foi possível identificar o tipo do formulário!</div>"; }
+	}
+	else{
+		$_SESSION['cidadeindicadores_result'] = "<div class=\"alert alert-warning text-center\" role=\"alert\">Ops! Nenhum formulário foi encontrado!</div>";
 	}
 }
 
@@ -1257,7 +1439,7 @@ function submitPassword($p){
 					$dataSend = array('nome' => $p['novonome'], 'senha' => md5($p['novasenha1']), 'id' => $p['id']);
 					if(Db::update('admin_usuarios', $dataSend)){
 						$_SESSION['nome_usuario'] = $p['novonome'];
-						$_SESSION['user_result'] = '<font face="verdana" size="2">Editado com sucesso</font>';
+						$_SESSION['user_result'] = "<div class=\"alert alert-success text-center\" role=\"alert\">Senha alterada com sucesso</div>";
 					}
 				}
 				else{ $_SESSION['user_result'] = '<font face="verdana" size="2">Sua nova senha não pode ser igual a sua senha atual!</font>'; }
@@ -1271,11 +1453,13 @@ function submitPassword($p){
 
 
 if(isset($_POST['submit'])){submitnews($_POST); $_POST = array();}
+if(isset($_POST['submitCidIndicadores'])){submitcidade_indicadores($_POST); $_POST = array();}
 else if(isset($_POST['submitPass'])){submitPassword($_POST); $_POST = array();}
 
 if(isset($_GET['action'])){
 	if($_GET['action'] == 'ferramentas_facebook'){ ferramentas_facebook(); }
 	if($_GET['action'] == 'usuario'){ usuario(); }
+
 	else if($_GET['action'] == 'adicionarnews'){ adicionarnews(); }
 	else if($_GET['action'] == 'editarnews' && isset($_GET['id']) && is_numeric($_GET['id'])){ editarnews($_GET['id']); }
 	else if($_GET['action'] == 'deletarnews' && isset($_GET['id']) && is_numeric($_GET['id'])){ deletarnews($_GET['id']); }
@@ -1283,6 +1467,15 @@ if(isset($_GET['action'])){
 		if(isset($_GET['pagina']) && is_numeric($_GET['pagina'])){ mostrarnews($_GET['pagina']);}
 		else{ mostrarnews(); }
 	}
+
+	else if($_GET['action'] == 'ADD_cidindicadores'){ ADD_cidindicadores(); }
+	else if($_GET['action'] == 'EDIT_cidindicadores' && isset($_GET['id']) && is_numeric($_GET['id'])){ EDIT_cidindicadores($_GET['id']); }
+	else if($_GET['action'] == 'DEL_cidindicadores' && isset($_GET['id']) && is_numeric($_GET['id'])){ DEL_cidindicadores($_GET['id']); }
+	else if($_GET['action'] == 'VIEW_cidindicadores'){
+		if(isset($_GET['pagina']) && is_numeric($_GET['pagina'])){ VIEW_cidindicadores($_GET['pagina']);}
+		else{ VIEW_cidindicadores(); }
+	}
+
 	else{ index(); }
 }
 else{ index(); }
