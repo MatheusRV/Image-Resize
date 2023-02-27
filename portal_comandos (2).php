@@ -1,15 +1,9 @@
 <?php
-	
+
 	if (strstr($_SERVER["PHP_SELF"], "/admin/"))  die ("<html><head><title>Error</title></head><body scroll=\"no\"><BR><BR><center><font face=\"Verdana\" size=\"1\">Acesso negado!</font></center></body></html>");
 
-	//include "2023_pagesconfig_functions.php";
-	//include "config.php";
-	function cortar_texto($string,$max_size,$tail)	{		$linha = "$string";		$size = strlen($linha);		if(strlen($linha)>$max_size)	{		$linha = substr($linha, 0, $max_size);		$d = $linha;		$tmp = strrpos($d," ");		$linha = substr($linha, 0, $tmp);		$linha = $linha.$tail;		return $linha;		}		else		{		return $linha;		}	}
-        function seoUrl($str){
-        	$aaa = array('/(à|á|â|ã|ä|å|æ)/','/(è|é|ê|ë)/','/(ì|í|î|ï)/','/(ð|ò|ó|ô|õ|ö|ø)/','/(ù|ú|û|ü)/','/ç/','/þ/','/ñ/','/ß/','/(ý|ÿ)/','/(=|\+|\/|\\\|\.|\'|\_|\\n| |\(|\))/','/[^a-z0-9_ -]/s');
-        	$bbb = array('a','e','i','o','u','c','d','n','s','y','-','');
-        	return trim(trim(trim(preg_replace('/-{2,}/s', '-', preg_replace($aaa, $bbb, strtolower($str)))),'_'),'-');    }
-
+	include "2023_pagesconfig_functions.php";
+	include "portal_config_bdconnect.php";
 
 	function index()	{
 		echo "<section class=\"py-4\">
@@ -86,9 +80,9 @@ Main contain START -->
 								<div class="ms-3"><h3>
 
 							<?php
-								/*$result = Db::selectAll('usersonline');
+								$result = Db::selectAll('usersonline');
 								$total = count($result);
-								echo $total;	*/?>
+								echo $total;	?>
 									
 
 								</h3><h6 class="mb-0">online</h6></div>
@@ -200,7 +194,7 @@ Main contain START -->
 
 
 			<?php	
-			$query = "SELECT id, titulo, tema, imagem, cont, pdate, DATE_FORMAT(pdate, '%d/%m/%Y') as date FROM noticias WHERE pdate between now() - INTERVAL 2 DAY and now() ORDER BY cont DESC LIMIT 5";
+			$query = "SELECT id, titulo, tema, imagem, cont, DATE_FORMAT(pdate, '%d/%m/%Y') as date FROM noticias WHERE pdate between now() - INTERVAL 2 DAY and now() ORDER BY cont DESC LIMIT 5";
 			$sql = MySql::connect()->prepare($query);
 			$sql->execute();
 			if($sql->rowCount() == 0){ die("Error: ".$sql->errorInfo()[2]); }
@@ -242,17 +236,16 @@ Main contain START -->
 			if($sql->rowCount() == 0){ die("Error: ".$sql->errorInfo()[2]); }
 			else{ $result = $sql->fetchAll(); }
 
-						$resultados = $sql->rowCount();
-						$total = 0;
-
 						foreach($result as $key => $row){	
+
+							$resultados = $sql->rowCount();
 							$cont = $row['cont'];							
-							$data_atual = date_create(date('Y-m-d'));
-							$data_inicial = date_create($row['data_inicial']);
-							$diff = date_diff($data_atual,$data_inicial);
+							$data_atual=date_create(date('Y-m-d'));
+							$data_inicial=date_create($row['date']);
+							$diff=date_diff($data_atual,$data_inicial);
 							$period = $diff->format("%a");
-							if($period > 0){ $periodo = $period; }
-							else if($period <= 0){ $periodo = 1; }
+								if($period>0)			{	$periodo = $period;	}
+								else if($period<=0)		{	$periodo = 1;	}
 							$media = number_format(($cont)/($periodo),2);
 							$total += $media;
 						}
@@ -279,7 +272,7 @@ Main contain START -->
 
 							$cont = $row['cont'];							
 							$data_atual=date_create(date('Y-m-d'));
-							$data_inicial=date_create($row['data_inicial']);
+							$data_inicial=date_create($row['date']);
 							$diff=date_diff($data_atual,$data_inicial);
 							$period = $diff->format("%a");
 								if($period>0)			{	$periodo = $period;	}
@@ -1892,12 +1885,6 @@ function submitnews($p){
 					if(Db::insert('noticias', $dataSend)){
 						$lastId = MySql::connect()->lastInsertId();
 						$_SESSION['news_result'] = "<div class=\"alert alert-success text-center\" role=\"alert\">Notícia <b>$lastId</b> inserida com sucesso</div>";
-
-						//msg whats
-						$mensagem = '*'.strtoupper($p['titulo']).'*'.' - '.$p['resumo'];
-						
-						Whatsapp::sendNews($lastId);
-						//Whatsapp::sendMessage(API_DEFAULT_NUMBER, 'HELLO WORLD');
 					}
 				}
 				else if($type == 'edit'){
