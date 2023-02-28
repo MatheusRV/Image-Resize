@@ -1,7 +1,7 @@
 <?php	
 	header('Content-type: text/html; charset=iso-8859-1');
-	require "portal_autenticacao.php";						// Verificador de sessão
-	require("_xtras_config.php"); 							// Conexão com o banco de dados	?>
+	//require "portal_autenticacao.php";						// Verificador de sessão
+	require("config.php"); 							// Conexão com o banco de dados	?>
 
 <!DOCTYPE html>
 <html lang="pt-br">
