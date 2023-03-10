@@ -1,205 +1,907 @@
-<?php	
+<?php
 	header('Content-type: text/html; charset=iso-8859-1');
-	//require "portal_autenticacao.php";						// Verificador de sessão
-	require("config.php"); 							// Conexão com o banco de dados	?>
+	//include_once "2023_pagesconfig_functions.php";
+	//include_once "portal_config_bdconnect.php";
+	require_once "config.php"; 							// Conexão com o banco de dados PDO
 
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-	<title>Canal Içara - curta essa cidade</title>
+	function cortar_texto($string,$max_size,$tail)	{		$linha = "$string";		$size = strlen($linha);		if(strlen($linha)>$max_size)	{		$linha = substr($linha, 0, $max_size);		$d = $linha;		$tmp = strrpos($d," ");		$linha = substr($linha, 0, $tmp);		$linha = $linha.$tail;		return $linha;		}		else		{		return $linha;		}	}
+        function seoUrl($str){
+        	$aaa = array('/(à|á|â|ã|ä|å|æ)/','/(è|é|ê|ë)/','/(ì|í|î|ï)/','/(ð|ò|ó|ô|õ|ö|ø)/','/(ù|ú|û|ü)/','/ç/','/þ/','/ñ/','/ß/','/(ý|ÿ)/','/(=|\+|\/|\\\|\.|\'|\_|\\n| |\(|\))/','/[^a-z0-9_ -]/s');
+        	$bbb = array('a','e','i','o','u','c','d','n','s','y','-','');
+        	return trim(trim(trim(preg_replace('/-{2,}/s', '-', preg_replace($aaa, $bbb, strtolower($str)))),'_'),'-');    }
 
-	<!-- Meta Tags -->
-	<META charset=iso-8859-1>
-	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-	<meta name="author" content="canalicara.com">
+	$sql = MySql::connect()->prepare("SELECT *, DATE_FORMAT(pdate, '%d/%m/%Y | %H:%i') as date FROM paginas WHERE id = 11");
+	if($sql->execute() == false && $sql->rowCount() == 0){ die("Error: ".$sql->errorInfo()[2]); }
+	$row = $sql->fetch();
+	$destaque_texto = $row['texto'];
+	$destaque2 = $row['imagem'];
 
-<?php 	//Favicon 		?><link rel="shortcut icon" href="https://www.canalicara.com/assets/images/favicon.ico">
-<?php 	//Google Font	?><link rel="preconnect" href="https://fonts.gstatic.com">
-<?php 	//Google Font	?><link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;700&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
-<?php 	//Plugins CSS 	?><link rel="stylesheet" type="text/css" href="https://www.canalicara.com/assets/vendor/font-awesome/css/all.min.css">
-<?php 	//Plugins CSS	?><link rel="stylesheet" type="text/css" href="https://www.canalicara.com/assets/vendor/bootstrap-icons/bootstrap-icons.css">
-<?php 	//Theme CSS 	?><link rel="stylesheet" type="text/css" href="https://www.canalicara.com/assets/vendor/apexcharts/css/apexcharts.css">
-<?php 	//Theme CSS 	?><link rel="stylesheet" type="text/css" href="https://www.canalicara.com/assets/vendor/quill/css/quill.snow.css">
-<?php 	//Theme CSS 	?><link id="style-switch" rel="stylesheet" type="text/css" href="https://www.canalicara.com/assets/css/style.css">
-<?php 	//Padrão CSS	?><link rel="stylesheet" type="text/css" media="screen" href="https://www.canalicara.com/assets/padrao.css" />
+	$sql = MySql::connect()->prepare("SELECT *, DATE_FORMAT(pdate, '%d/%m/%Y | %H:%i') as date FROM paginas WHERE id = 17");
+	if($sql->execute() == false && $sql->rowCount() == 0){ die("Error: ".$sql->errorInfo()[2]); }
+	$row = $sql->fetch();
+	$destaque = $row['texto'];
+
+	//MAIS-RECENTE
+	$sql = MySql::connect()->prepare("SELECT *, DATE_FORMAT(pdate, '%d/%m/%Y | %H:%i') as date FROM noticias WHERE pdate <= NOW() AND NOT id = ? AND NOT id = ? AND NOT especial = ? AND abrangencia = ? ORDER BY pdate DESC LIMIT 1");
+	if($sql->execute([$destaque, $destaque2, 'trabalho-e-emprego', 'icara']) == false && $sql->rowCount() == 0){ die("Error: ".$sql->errorInfo()[2]); }
+	$row = $sql->fetch();
+	$id1 = $row['id'];
+
+	//MAIS-LIDAS
+	$sql = MySql::connect()->prepare("SELECT *, DATE_FORMAT(pdate, '%d/%m/%Y | %H:%i') as date FROM noticias WHERE pdate <= NOW() AND NOT id = ? AND NOT especial = ? AND abrangencia = ? ORDER BY pdate DESC LIMIT 1");
+	if($sql->execute([$id1, 'trabalho-e-emprego', 'icara']) == false && $sql->rowCount() == 0){ die("Error: ".$sql->errorInfo()[2]); }
+	$row = $sql->fetch();
+	$id2 = $row['id'];
+
+	$sql = MySql::connect()->prepare("SELECT *, DATE_FORMAT(pdate, '%d/%m/%Y | %H:%i') as date FROM noticias WHERE pdate between now() - INTERVAL 2 DAY and now() AND NOT id = ? AND NOT id = ? AND NOT especial = 'trabalho-e-emprego' ORDER BY cont DESC LIMIT 1");
+	if($sql->execute([$id1, $id2]) == false && $sql->rowCount() == 0){ die("Error: ".$sql->errorInfo()[2]); }
+	$row = $sql->fetch();
+	$id3 = $row['id'];
+
+	$sql = MySql::connect()->prepare("SELECT *, DATE_FORMAT(pdate, '%d/%m/%Y | %H:%i') as date FROM noticias WHERE pdate between now() - INTERVAL 2 DAY and now() AND NOT id = ? AND NOT id = ? AND NOT id = ? AND NOT especial = 'trabalho-e-emprego' ORDER BY cont DESC LIMIT 1");
+	if($sql->execute([$id1, $id2, $id3]) == false && $sql->rowCount() == 0){ die("Error: ".$sql->errorInfo()[2]); }
+	$row = $sql->fetch();
+	$id4 = $row['id'];
+	
+	$sql = MySql::connect()->prepare("SELECT *, DATE_FORMAT(pdate, '%d/%m/%Y | %H:%i') as date FROM noticias WHERE pdate between now() - INTERVAL 2 DAY and now() AND NOT id = ? AND NOT id = ? AND NOT id = ? AND NOT id = ? AND NOT especial='trabalho-e-emprego' ORDER BY pdate DESC LIMIT 1");
+	if($sql->execute([$id1, $id2, $id3, $id4]) == false && $sql->rowCount() == 0){ die("Error: ".$sql->errorInfo()[2]); }
+	$row = $sql->fetch();
+	$id5 = $row['id'];
+	?>
+
+<!DOCTYPE html PUBLIC>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<!--[if IE 9]><html class="lt-ie10" lang="pt-br" > <![endif]-->
+	<head>
+		<META charset=iso-8859-1>
+		<title>Canal Içara - curta essa cidade!</title>
+
+		<? //META TAGS ?>
+		<META HTTP-EQUIV="REFRESH" CONTENT="3600">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<meta http-equiv="expires" content="0" />
+		<meta name="description" content="Canal Içara é o site com notícias, opiniões, enquetes, classificados, fotos e vídeos mais especializado sobre Içara e os içarenses espalhados pelo mundo" />
+		<meta name="keywords" content="internet, canal, portal, içara, news, notícias, içarense, jornalismo, esporte, economia, educação, política, saúde, segurança, tecnologia, trânsito, cultura, entretenimento, festas, vídeos" />
+		<meta name="author" content="Canal Içara" />
+		<meta name="DC.title" content="Canal Içara" />
+		<meta name="resource-type" content="document" />
+		<meta name="doc-class" content="Completed" />
+		<meta name="classification" content="Internet" />
+		<meta name="robots" content="ALL" />
+		<meta name="rating" content="General" />
+		<meta name="distribution" content="Global" />
+		<meta name="revisit-after" content="1" />
+		<meta name="language" content="pt-br" />
+		<meta lang="pt-br" />
+		<meta name="copyright" content="Copyright (c) by Canalicara.com" />
+		<meta name="ROBOS"content="INDEX,FOLLOW" />
+		<meta name="revisit-after" content="7 Days" />
+
+		<link rel="shortcut icon" href="<?=INCLUDE_PATH?>assets/images/favicon.ico"><? //Favicon ?>
+		<link rel="preconnect" href="https://fonts.gstatic.com"><? //Google Font ?>
+		<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;700&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet"><? //Google Font ?>
+		<link rel="stylesheet" type="text/css" href="<?=INCLUDE_PATH?>assets/vendor/font-awesome/css/all.min.css"><? //Plugins CSS ?>
+		<link rel="stylesheet" type="text/css" href="<?=INCLUDE_PATH?>assets/vendor/bootstrap-icons/bootstrap-icons.css"><? //Plugins CSS ?>
+		<link rel="stylesheet" type="text/css" href="<?=INCLUDE_PATH?>assets/vendor/tiny-slider/tiny-slider.css"><? //Plugins CSS ?>
+		<link rel="stylesheet" type="text/css" href="<?=INCLUDE_PATH?>assets/vendor/glightbox/css/glightbox.css"><? //Plugins CSS ?>
+		<link rel="stylesheet" type="text/css" href="<?=INCLUDE_PATH?>assets/vendor/plyr/plyr.css"><? //Plugins CSS ?>
+		<link id="style-switch" rel="stylesheet" type="text/css" href="<?=INCLUDE_PATH?>assets/css/style.css"><? //Theme CSS ?>
+		<link rel="stylesheet" type="text/css" media="screen" href="<?=INCLUDE_PATH?>assets/padrao.css" /><? //Padrão CSS ?>
+	</head>
+	<body>
+
+		<?php	//include "2023_pagesconfig_layout_topo.php";
+				//include "2023_pagesconfig_scripts.php";	?>
 
 
-</head>
+		<!-- ======================= Trending END -->
 
-<body>
+		<?php //include "pagesconfig_banners_premium.php";	?>
 
-<!-- =======================
-Header START -->
-<header class="navbar-light navbar-sticky header-static border-bottom navbar-dashboard">
-	<!-- Logo Nav START -->
-	<nav class="navbar navbar-expand-xl">
-		<div class="container">
-			<!-- Logo START -->
-			<a class="navbar-brand me-3" href="https://www.canalicara.com/">
-				<img class="navbar-brand-item light-mode-item" style="height: 65px;" src="https://www.canalicara.com/assets/images/logo.svg" alt="logo">			
-				<img class="navbar-brand-item dark-mode-item" style="height: 65px;" src="https://www.canalicara.com/assets/images/logo-light.svg" alt="logo">			
-			</a>
-			<!-- Logo END -->
+		<!-- ======================= Main hero START -->
+		<section class="pt-4 pb-0 card-grid">
+			<div class="container">
+				<div class="row g-4">
+					<!-- Left big card ---->
+					<div class="col-lg-6">
+						<!-- Card item START -->
+						<?php
+							$sql = MySql::connect()->prepare("SELECT id, titulo, tema, imagem, resumo, DATE_FORMAT(pdate, '%d/%m | %H:%i') as date FROM noticias WHERE id = ?");
+							if($sql->execute([$id1]) == false && $sql->rowCount() == 0){ die("Error: ".$sql->errorInfo()[2]); }
 
-			<!-- Responsive navbar toggler -->
-			<button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
-				<span class="text-body h6 d-none d-sm-inline-block">Menu</span>
-				<span class="navbar-toggler-icon"></span>
-			</button>
+							$row = $sql->fetch();
+							$titulo = $row['titulo'];
+							$URL = seoUrl($titulo);
+							$resumo = $row['resumo'];
+							$data = $row['date'];
+							$texto = $row['texto'];
+							$tema = $row['tema'];
+							$URL_tema = seoUrl($tema);
+							$imagem = $row['imagem'];
+							$img = substr($imagem, strlen(INCLUDE_PATH)-1);
+							$video_youtube = $row['video_youtube'];
 
-			<!-- Main navbar START -->
-			<div class="collapse navbar-collapse" id="navbarCollapse">
-				<ul class="navbar-nav navbar-nav-scroll mx-auto">
+							echo 	"<div class=\"card card-overlay-bottom card-grid-lg card-bg-scale\" style=\"background-image:url(".INCLUDE_PATH."imgtemp/?largura=500&altura=550&arquivo=$img); background-position: center left; background-size: cover;\">
+								<span class=\"card-featured bg_$tema\" title=\"Notícia mais recente\"><i class=\"fas fa-star\"></i></span><!-- Card featured ------->	
+								<div class=\"card-img-overlay d-flex align-items-center p-3 p-sm-4\">
+									<div class=\"w-100 mt-auto\">
+										<a href=\"".INCLUDE_PATH."$URL_tema/$URL-{$row['id']}.html\" class=\"badge bg_$tema mb-2\"><i class=\"fas fa-circle me-2 small fw-bold\"></i>$tema</a><!-- Card category ------->	
+										<h2 class=\"text-white h1\"><a href=\"".INCLUDE_PATH."$URL_tema/$URL-{$row['id']}.html\" class=\"btn-link stretched-link text-reset\">$titulo</a></h2><!-- Card title ---------->	
+										<p class=\"text-white\">$resumo</p><!-- Card resumo --------->	
+										<ul class=\"nav nav-divider text-white-force align-items-center d-none d-sm-inline-block\">
+											<li class=\"nav-item\">$data</li>
+										</ul><!-- Card info ----------->	
+									</div>
+								</div><!-- Card Image overlay -->	
+							</div>\n";
+					?></div>
 
-					<!-- Nav item 1 Demos -->
-					<li class="nav-item"><a class="nav-link" href="portal_admin.php"><i class="bi bi-house-door me-1"></i>Dashboard</a></li>
+					<!-- Right small cards -->
+					<div class="col-lg-6">
+						<div class="row g-4">
+							<!-- Card item START -->
+							<?php
+								$sql = MySql::connect()->prepare("SELECT id, titulo, tema, imagem, DATE_FORMAT(pdate, '%d/%m | %H:%i') as date FROM noticias WHERE id = ?");
+								if($sql->execute([$id2]) == false && $sql->rowCount() == 0){ die("Error: ".$sql->errorInfo()[2]); }
 
-					<!-- Nav item 2 Post -->
-					<li class="nav-item dropdown">
-						<a class="nav-link dropdown-toggle" href="portal_admin.php?adicionarnews" id="postMenu" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="bi bi-pencil me-1"></i>Post</a>
-						<ul class="dropdown-menu" aria-labelledby="postMenu">
-							<li> <a class="dropdown-item" href="portal_admin.php?action=adicionarnews"><i class="text-info fa-fw bi bi-file-earmark-plus me-2"></i> Adicionar</a> </li>
-							<li> <a class="dropdown-item" href="portal_admin.php?action=mostrarnews"><i class="text-warning fa-fw bi bi-pencil-square me-2"></i>Editar</a> </li></ul>
-					</li>
+								$row = $sql->fetch();
+								$titulo = $row['titulo'];
+								$URL = seoUrl($titulo);
+								$resumo = $row['resumo'];
+								$data = $row['date'];
+								$texto = $row['texto'];
+								$tema = $row['tema'];
+								$URL_tema = seoUrl($tema);
+								$imagem = $row['imagem'];
+								$img = substr($imagem, strlen(INCLUDE_PATH)-1);
+								$video_youtube = $row['video_youtube'];
 
-					<!-- Nav item 3 Pages -->
-					<li class="nav-item dropdown">
-						<a class="nav-link dropdown-toggle" href="#" id="pagesMenu" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="bi bi-folder me-1"></i>Pages</a>
-						<ul class="dropdown-menu" aria-labelledby="pagesMenu">
-							<li> <a class="dropdown-item" href="dashboard-author-list.html">Author List</a></li>
-							<li> <a class="dropdown-item" href="dashboard-author-single.html">Author Single</a></li>
-							<li> <a class="dropdown-item" href="dashboard-edit-profile.html">Edit Profile</a></li>
-							<li> <a class="dropdown-item" href="dashboard-reviews.html">Reviews</a></li>
-							<li> <a class="dropdown-item" href="dashboard-settings.html">Settings</a></li>
-							<li class="dropdown-divider"></li>
-							<li> <a class="dropdown-item" href="https://support.webestica.com/" target="_blank"> <i class="text-warning fa-fw bi bi-life-preserver me-2"></i>Support</a></li>
-							<li> <a class="dropdown-item" href="docs/index.html" target="_blank"> <i class="text-danger fa-fw bi bi-card-text me-2"></i>Documentation</a></li>
-							<li class="dropdown-divider"></li>
-							<li><a class="dropdown-item" href="https://blogzine.webestica.com/rtl" target="_blank"> <i class="text-info fa-fw bi bi-toggle-off me-2"></i>RTL demo</a></li>
-							<li><a class="dropdown-item" href="https://themes.getbootstrap.com/store/webestica/" target="_blank"> <i class="text-success fa-fw bi bi-cloud-download-fill me-2"></i>Buy blogzine!</a> </li>
-						</ul>
-					</li>
-				</ul>
-				
-				<!-- Search dropdown START -->
-				<div class="nav my-3 my-xl-0 px-4 px-lg-1 flex-nowrap align-items-center">
-					<div class="nav-item w-100">
-						<form class="position-relative">
-							<input class="form-control pe-5 bg-transparent" type="search" placeholder="Search" aria-label="Search">
-							<button class="btn bg-transparent border-0 px-2 py-0 position-absolute top-50 end-0 translate-middle-y" type="submit"><i class="fas fa-search fs-6 "></i></button>
-						</form>
+								echo 	"<div class=\"col-12\">
+									<div class=\"card card-overlay-bottom card-grid-sm card-bg-scale\" style=\"background-image:url(".INCLUDE_PATH."imgtemp/?largura=700&altura=350&arquivo=$img); background-position: center left; background-size: cover;\">
+										<div class=\"card-img-overlay d-flex align-items-center p-3 p-sm-4\">	
+											<div class=\"w-100 mt-auto\">
+												<a href=\"".INCLUDE_PATH."$URL_tema/$URL-{$row['id']}.html\" class=\"badge bg_$tema  mb-2\"><i class=\"fas fa-circle me-2 small fw-bold\"></i>$tema</a><!-- Card category ------->	
+												<h4 class=\"text-white\"><a href=\"".INCLUDE_PATH."$URL_tema/$URL-{$row['id']}.html\" class=\"btn-link stretched-link text-reset\">$titulo</a></h4><!-- Card title ---------->	
+												<ul class=\"nav nav-divider text-white-force align-items-center d-none d-sm-inline-block\">
+													<li class=\"nav-item\">$data</li>
+												</ul><!-- Card info ----------->	
+											</div>
+										</div><!-- Card Image overlay -->
+									</div>
+								</div>\n";
+							?>
+
+							<!-- Card item START -->
+							<?php
+								$sql = MySql::connect()->prepare("SELECT id, titulo, tema, imagem, DATE_FORMAT(pdate, '%d/%m | %H:%i') as date FROM noticias WHERE id = ? OR id = ? ORDER BY RAND() LIMIT 2");
+								if($sql->execute([$id3, $id4]) == false && $sql->rowCount() == 0){ die("Error: ".$sql->errorInfo()[2]); }
+
+								$res = $sql->fetchAll();
+								foreach($res as $row){
+									$titulo = $row['titulo'];
+									$URL = seoUrl($titulo);
+									$resumo = $row['resumo'];
+									$data = $row['date'];
+									$texto = $row['texto'];
+									$tema = $row['tema'];
+									$URL_tema = seoUrl($tema);
+									$imagem = $row['imagem'];
+									$img = substr($imagem, strlen(INCLUDE_PATH)-1);
+									$video_youtube = $row['video_youtube'];
+
+									echo 	"<div class=\"col-md-6\">
+										<div class=\"card card-overlay-bottom card-grid-sm card-bg-scale\" style=\"background-image:url(".INCLUDE_PATH."imgtemp/?largura=700&altura=350&arquivo=$img); background-position: center left; background-size: cover;\">
+											<div class=\"card-img-overlay d-flex align-items-center p-3 p-sm-4\">	
+												<div class=\"w-100 mt-auto\">
+													<a href=\"".INCLUDE_PATH."$URL_tema/$URL-{$row['id']}.html\" class=\"badge bg_$tema mb-2\"><i class=\"fas fa-circle me-2 small fw-bold\"></i>$tema</a><!-- Card category ------->
+													<h4 class=\"text-white\">
+														<a href=\"".INCLUDE_PATH."$URL_tema/$URL-{$row['id']}.html\" class=\"btn-link stretched-link text-reset\">$titulo</a>
+													</h4><!-- Card title ---------->	
+													<ul class=\"nav nav-divider text-white-force align-items-center d-none d-sm-inline-block\">
+														<li class=\"nav-item\">$data</li>
+													</ul><!-- Card info ----------->	
+												</div>
+											</div><!-- Card Image overlay -->
+										</div>
+									</div>\n";
+								}
+							?>
+						</div>
 					</div>
 				</div>
-				<!-- Search dropdown END -->
 			</div>
-			<!-- Main navbar END -->
+		</section>
+		<!-- ======================= Main hero END -->
 
-			<!-- Nav right START -->
-			<div class="nav flex-nowrap align-items-center">
+		<!-- ======================= Main content START -->
+		<section class="position-relative">
+			<div class="container" data-sticky-container>
+				<div class="row">
+					<!-- Main Post START -->
+					<div class="col-lg-9">
+						<!-- Title -->
+						<div class="mb-4">
+							<h2 class="m-0"><i class="bi bi-newspaper me-2"></i>Mais informação</h2>
+							<p>Confira outras notícias e conteúdos do Portal Canal Içara</p>
+						</div>
+						<div class="row gy-4">
+							<!-- Card item START -->
+							<?php
+								$sql = MySql::connect()->prepare("SELECT id, titulo, tema, imagem, resumo, DATE_FORMAT(pdate, '%d/%m | %H:%i') as date FROM noticias WHERE pdate <= NOW() AND NOT id = ? AND NOT id = ? AND NOT id = ? AND NOT id = ? ORDER BY pdate DESC LIMIT 6");
+								if($sql->execute([$id1, $id2, $id3, $id4]) == false && $sql->rowCount() == 0){ die("Error: ".$sql->errorInfo()[2]); }
+								$res = $sql->fetchAll();
 
-				<!-- Profile dropdown START -->
-				<div class="nav-item ms-2 ms-md-3 dropdown">
-					<!-- Avatar -->
-					<a class="avatar avatar-sm p-0" href="#" id="profileDropdown" role="button" data-bs-auto-close="outside" data-bs-display="static" data-bs-toggle="dropdown" aria-expanded="false">
-						<i class="fa bi-person-circle fs-1 dark"></i>
-					</a>
+								foreach($res as $row){
+									$titulo = $row['titulo'];
+									$URL = seoUrl($titulo);
+									$resumo = $row['resumo'];
+									$data = $row['date'];
+									$texto = $row['texto'];
+									$tema = $row['tema'];
+									$URL_tema = seoUrl($tema);
+									$imagem = $row['imagem'];
+									$img = substr($imagem, strlen(INCLUDE_PATH)-1);
+									$video_youtube = $row['video_youtube'];
 
-					<!-- Profile dropdown START -->
-					<ul class="dropdown-menu dropdown-animation dropdown-menu-end shadow pt-3" aria-labelledby="profileDropdown">
-						<!-- Profile info -->
-						<li class="px-3">
-							<div class="d-flex align-items-center">
-								<div><a class="h6 mt-2 mt-sm-0" href="#"><?php echo $_SESSION["nome_usuario"] ?></a></div>
-							</div>
-							<hr>
-						</li>
-						<!-- Links -->
-						<li><a class="dropdown-item" href="portal_admin.php?action=usuario"><i class="bi bi-person fa-fw me-2"></i>Editar perfil</a></li>
-						<li><a class="dropdown-item" href="portal_logout.php"><i class="bi bi-power fa-fw me-2"></i>Sair</a></li>
-						<li class="dropdown-divider mb-3"></li>
-						<li>
-							<div class="dropdown-item">
-								<div class="modeswitch m-0" id="darkModeSwitch">
-									<div class="switch"></div>
+									echo 	"<div class=\"col-sm-6\">
+										<div class=\"card\">
+											<div class=\"position-relative\"><img class=\"card-img\" src=\"".INCLUDE_PATH."imgtemp/?largura=700&altura=450&arquivo=$img\" alt=\"Card image\">
+												<div class=\"card-img-overlay d-flex align-items-start flex-column p-3\">
+													<div class=\"w-100 mt-auto\">
+														<a href=\"".INCLUDE_PATH."$URL_tema/$URL-{$row['id']}.html\" class=\"badge bg_$tema  mb-2\"><i class=\"fas fa-circle me-2 small fw-bold\"></i>$tema</a>
+													</div><!-- Card category -->	
+												</div>
+											</div><!-- Card img -->	
+
+											<div class=\"card-body px-0 pt-3\">
+												<h4 class=\"card-title mt-2\">
+													<a href=\"".INCLUDE_PATH."$URL_tema/$URL-{$row['id']}.html\" class=\"btn-link text-reset fw-bold\">$titulo</a>
+												</h4>
+												<p class=\"card-text\">$resumo</p>
+												<ul class=\"nav nav-divider align-items-center d-none d-sm-inline-block\">
+													<li class=\"nav-item\">$data</li>
+												</ul><!-- Card info -->
+											</div>
+										</div>
+									</div>\n";
+								}
+							?>
+						</div>
+					</div>
+					<!-- Main Post END -->
+					<!-- Sidebar START -->
+					<div class="col-lg-3 mt-5 mt-lg-0">
+						<div data-sticky data-margin-top="80" data-sticky-for="767">
+
+							<!-- Social widget START -->
+							<div class="row g-2">
+								<div class="col-4">
+									<a href="https://www.facebook.com/portalcanalicara" class="bg-facebook rounded text-center text-white-force p-3 d-block" target=_blank>
+										<i class="fab fa-facebook-square fs-5 mb-2"></i>
+										<h6 class="m-0">25k</h6>
+										<span class="small">Fans</span>
+									</a>
+								</div>
+								<div class="col-4">
+									<a href="https://www.instagram.com/portalcanalicara/" class="bg-instagram-gradient rounded text-center text-white-force p-3 d-block" target=_blank>
+										<i class="fab fa-instagram fs-5 mb-2"></i>
+										<h6 class="m-0">14k</h6>
+										<span class="small">Followers</span>
+									</a>
+								</div>
+								<div class="col-4">
+									<a href="https://www.youtube.com/portalcanalicara" class="bg-youtube rounded text-center text-white-force p-3 d-block" target=_blank>
+										<i class="fab fa-youtube-square fs-5 mb-2"></i>
+										<h6 class="m-0">1,5k</h6>
+										<span class="small">Subs</span>
+									</a>
 								</div>
 							</div>
-						</li>
-					</ul>
-					<!-- Profile dropdown END -->
-				</div>
-				<!-- Profile dropdown END -->
+							<!-- Social widget END -->
 
-			<!-- Nav right END -->
+								<div class="col-12 col-sm-12 col-lg-12 my-4">
+									<?php //include "pagesconfig_banners_start.php";	?>
+								</div><!-- BANNER START -->
+
+								<div class="row">
+									<div class="col-12 col-sm-6 col-lg-12">
+										<h4 class="mt-4 mb-3"><i class="bi bi-globe"></i> BLOGOSFERA</h4>
+										<!-- Recent post item -->
+										<?php
+											$sql = MySql::connect()->prepare("SELECT id, titulo, tema, imagem, DATE_FORMAT(pdate, '%d/%m | %H:%i') as date FROM noticias WHERE pdate <= NOW() AND blog !='' ORDER BY pdate DESC LIMIT 3");
+											if($sql->execute() == false && $sql->rowCount() == 0){ die("Error: ".$sql->errorInfo()[2]); }
+											$res = $sql->fetchAll();
+
+											foreach ($res as $row){
+												$titulo = $row['titulo'];
+												$URL = seoUrl($titulo);
+												$resumo = $row['resumo'];
+												$data = $row['date'];
+												$texto = $row['texto'];
+												$tema = $row['tema'];
+												$URL_tema = seoUrl($tema);
+												$imagem = $row['imagem'];
+												$img = substr($imagem, strlen(INCLUDE_PATH)-1);
+												$video_youtube = $row['video_youtube'];
+
+												echo 	"<div class=\"card mb-3\">
+													<div class=\"row g-3\">
+														<div class=\"col-4\"><img class=\"rounded\" src=\"".INCLUDE_PATH."imgtemp/?largura=700&altura=450&arquivo=$img\" alt=\"\"></div>
+														<div class=\"col-8\">
+															<h6><a href=\"".INCLUDE_PATH."$URL_tema/$URL-{$row['id']}.html\" class=\"btn-link stretched-link text-reset fw-bold\">$titulo</a></h6>
+															<div class=\"small mt-1\">$data</div>
+														</div>
+													</div>
+												</div>\n";
+											}
+										?>
+									</div>
+								</div><!-- BLOGOSFERA -->
+
+								<div class="col-12 col-sm-6 col-lg-12 my-4">
+									<?php //include "pagesconfig_banners_expert.php";	?>
+								</div><!-- BANNER EXPT 2 -->
+
+								<div class="row">
+									<div class="col-12 col-sm-6 col-lg-12">
+										<h4 class="mt-4 mb-3"><i class="bi bi-list-stars"></i> OPORTUNIDADES</h4>
+										<!-- Recent post item -->
+										<?php
+											$sql = MySql::connect()->prepare("SELECT id, titulo, tema, imagem, DATE_FORMAT(pdate, '%d/%m | %H:%i') as date FROM noticias WHERE pdate <= NOW() AND especial = ? ORDER BY pdate DESC LIMIT 3");
+											if($sql->execute(['trabalho-e-emprego']) == false && $sql->rowCount() == 0){ die("Error: ".$sql->errorInfo()[2]); }
+											$res = $sql->fetchAll();
+
+											foreach ($res as $row){
+												$titulo = $row['titulo'];
+												$URL = seoUrl($titulo);
+												$resumo = $row['resumo'];
+												$data = $row['date'];
+												$texto = $row['texto'];
+												$tema = $row['tema'];
+												$URL_tema = seoUrl($tema);
+												$imagem = $row['imagem'];
+												$img = substr($imagem, strlen(INCLUDE_PATH)-1);
+												$video_youtube = $row['video_youtube'];
+
+												echo 	"<div class=\"card mb-3\">
+													<div class=\"row g-3\">
+														<div class=\"col-4\"><img class=\"rounded\" src=\"".INCLUDE_PATH."imgtemp/?largura=700&altura=450&arquivo=$img\" alt=\"\"></div>
+														<div class=\"col-8\"><h6><a href=\"".INCLUDE_PATH."$URL_tema/$URL-{$row['id']}.html\" class=\"btn-link stretched-link text-reset fw-bold\">$titulo</a></h6>
+															<div class=\"small mt-1\">$data</div>
+														</div>
+													</div>
+												</div>\n";
+											}
+										?>
+									</div>
+								</div><!-- VAGAS DE TRABALHO -->
+								<div class="col-12 col-sm-6 col-lg-12 my-4"><?php //include "pagesconfig_banners_expert.php";	?></div><!-- BANNER EXPT 2 -->
+							</div>
+						</div>
+					</div><!-- Sidebar END -->
+				</div> <!-- Row end -->
 			</div>
-		</div>
-	</nav>
-	<!-- Logo Nav END -->
-</header>
-<!-- =======================
-Header END -->
+		</section>
+		<!-- =======================
+		Main content END -->
 
-<!-- **************** MAIN CONTENT START **************** -->
-<main>
+		<!-- Divider -->
+		<div class="container"><div class="border-bottom border-primary border-2 opacity-1"></div></div>
+
+		<!-- ======================= Featured video START -->
+		<section class="bg-dark">
+			<div class="container">
+				<div class="row">
+					<!-- Title -->
+					<div class="col-md-12">
+						<div class="mb-4 d-sm-flex justify-content-between align-items-center">
+							<h2 class="m-sm-0 text-white"><i class="bi bi-camera-video me-2"></i>Vídeos</h2>
+							<a href="https://www.youtube.com/portalcanalicara" class="btn btn-sm bg-youtube" target=_blank><i class="bi bi-youtube me-2 align-middle"></i>YouTube</a>
+						</div>
+					</div>
+
+					<!-- Card big START -->
+					<?php
+						$sql = MySql::connect()->prepare("SELECT id, titulo, tema, imagem, video_youtube, DATE_FORMAT(pdate, '%d/%m | %H:%i') as date FROM noticias WHERE pdate <= NOW() AND video_youtube!='' ORDER BY pdate DESC LIMIT 1");
+						if($sql->execute() == false && $sql->rowCount() == 0){ die("Error: ".$sql->errorInfo()[2]); }
+						$row = $sql->fetch();
+						
+						$titulo = $row['titulo'];
+						$URL = seoUrl($titulo);
+						$resumo = $row['resumo'];
+						$data = $row['date'];
+						$texto = $row['texto'];
+						$tema = $row['tema'];
+						$URL_tema = seoUrl($tema);
+						$imagem = $row['imagem'];
+						$img = substr($imagem, strlen(INCLUDE_PATH)-1);
+						$video_youtube = $row['video_youtube'];
+
+						echo 	"<div class=\"col-lg-6\">
+							<div class=\"card card-overlay-bottom card-fold h-400 h-lg-540\" style=\"background-image:url(".INCLUDE_PATH."imgtemp/?largura=700&altura=450&arquivo=$img); background-position: center left; background-size: cover;\">
+								<span class=\"card-featured\" title=\"Featured post\"><i class=\"fas fa-star\"></i></span><!-- Card featured -->
+								<div class=\"card-img-overlay d-flex flex-column p-3 p-sm-5\">
+									<div class=\"position-absolute top-50 start-50 translate-middle pb-5\">
+										<a href=\"https://youtu.be/$video_youtube\" class=\"icon-lg bg-primary d-block text-white rounded-circle\" data-glightbox data-gallery=\"y-video\">&nbsp;<i class=\"bi bi-play-btn\"></i>&nbsp;</a><!-- Popup video -->
+									</div><!-- Card play button -->
+									<div class=\"w-100 mt-auto\">
+										<div class=\"col text-center\">
+											<a href=\"#\" class=\"badge bg_$tema mb-2\"><i class=\"fas fa-circle me-2 small fw-bold\"></i>$tema</a><!-- Card category -->
+											<h2 class=\"text-white\"><a href=\"".INCLUDE_PATH."$URL_tema/$URL-{$row['id']}.html\" class=\"btn-link text-reset fw-normal\">$titulo</a></h2><!-- Card title -->
+										</div>
+									</div><!-- Card overlay Bottom  -->
+								</div><!-- Card Image overlay -->
+							</div>
+						</div>\n";
+					?>
+
+					<div class="col-lg-3 mt-4 mt-lg-0">
+						<!-- Card item START -->
+						<?php
+							$sql = MySql::connect()->prepare("SELECT id, titulo, tema, imagem, video_youtube, DATE_FORMAT(pdate, '%d/%m | %H:%i') as date FROM noticias WHERE pdate <= NOW() AND video_youtube != '' ORDER BY pdate DESC LIMIT 1,2");
+							if($sql->execute() == false && $sql->rowCount() == 0){ die("Error: ".$sql->errorInfo()[2]); }
+							$res = $sql->fetchAll();
+
+							foreach($res as $row){
+								$titulo = $row['titulo'];
+								$URL = seoUrl($titulo);
+								$resumo = $row['resumo'];
+								$data = $row['date'];
+								$texto = $row['texto'];
+								$tema = $row['tema'];
+								$URL_tema = seoUrl($tema);
+								$imagem = $row['imagem'];
+								$img = substr($imagem, strlen(INCLUDE_PATH)-1);
+								$video_youtube = $row['video_youtube'];
+
+								echo 	"<div class=\"card bg-transparent overflow-hidden mb-4\">
+									<div class=\"position-relative rounded-3 overflow-hidden\">
+										<div class=\"card-image\">
+											<div class=\"overflow-hidden w-100\">
+												<div class=\"player-wrapper rounded-3 overflow-hidden\">
+													<div class=\"player-youtube\" ><iframe src=\"https://www.youtube.com/embed/$video_youtube\"></iframe></div>
+												</div><!-- HTML video START -->
+											</div>
+										</div><!-- Video -->
+									</div><!-- Card img -->
+									<div class=\"card-body px-0 pt-3\"><h5 class=\"card-title\"><a href=\"".INCLUDE_PATH."$URL_tema/$URL-{$row['id']}.html\" class=\"btn-link text-white fw-bold\">$titulo</a></h5>
+										<ul class=\"nav nav-divider align-items-center d-none d-sm-inline-block text-white-force small opacity-6\">
+											<li class=\"nav-item\">$data</li>
+										</ul><!-- Card info -->
+									</div><!-- Card titulo -->
+								</div>\n";
+							}
+						?>
+					</div><!-- Card small START -->
+					<div class="col-lg-3">
+						<!-- Card item START -->
+						<?php
+							$sql2 = MySql::connect()->prepare("SELECT id, titulo, tema, imagem, video_youtube, DATE_FORMAT(pdate, '%d/%m | %H:%i') as date FROM noticias WHERE pdate <= NOW() AND video_youtube != '' ORDER BY pdate DESC LIMIT 3,2");
+							if($sql2->execute() == false && $sql->rowCount() == 0){ die("Error: ".$sql->errorInfo()[2]); }
+							$res = $slq2->fetchAll();
+
+							foreach($res as $row){
+								$titulo = $row['titulo'];
+								$URL = seoUrl($titulo);
+								$resumo = $row['resumo'];
+								$data = $row['date'];
+								$texto = $row['texto'];
+								$tema = $row['tema'];
+								$URL_tema = seoUrl($tema);
+								$imagem = $row['imagem'];
+								$img = substr($imagem, strlen(INCLUDE_PATH)-1);
+								$video_youtube = $row['video_youtube'];
+
+								echo 	"<div class=\"card bg-transparent overflow-hidden mb-4\">
+									<div class=\"position-relative rounded-3 overflow-hidden\">
+										<div class=\"card-image\">
+											<div class=\"overflow-hidden w-100\">
+												<div class=\"player-wrapper rounded-3 overflow-hidden\">
+													<div class=\"player-youtube\" ><iframe src=\"https://www.youtube.com/embed/$video_youtube\"></iframe></div><!-- HTML video START -->
+												</div>
+											</div>
+										</div><!-- Video -->
+									</div><!-- Card img -->
+									<div class=\"card-body px-0 pt-3\"><h5 class=\"card-title\"><a href=\"".INCLUDE_PATH."$URL_tema/$URL-{$row['id']}.html\" class=\"btn-link text-white fw-bold\">$titulo</a></h5>
+										<ul class=\"nav nav-divider align-items-center d-none d-sm-inline-block text-white-force small opacity-6\">
+														<li class=\"nav-item\">$data</li>
+										</ul><!-- Card info -->
+									</div><!-- Card titulo -->
+								</div>\n";
+							}
+						?>
+					</div><!-- Card small END -->
+				</div>
+			</div>
+		</section>
+		<!-- ======================= Featured video END -->
 
 
-<div class="small-12 columns"><?php	include("portal_comandos.php");	?></DIV>
+		<!-- ======================= EMPREENDA MAIS -->
+		<section class="pt-4">
+			<div class="container"  style="margin-top:50px;">
+				<div class="row">
+					<div class="col-md-12">
+						<div class="mb-4 d-md-flex justify-content-between align-items-center">
+							<h2 class="m-0"><i class="bi bi-chat-right-text"></i> Empreenda Mais</h2>
+							<a href="<?=INCLUDE_PATH?>especial/empreenda-mais/" class="text-body small"><u>Aproveite muito conteúdo para o seu desenvolvimento!</u></a>
+						</div><!-- Title -->
 
+						<div class="tiny-slider arrow-hover arrow-blur arrow-dark arrow-round">
+							<div class="tiny-slider-inner"
+							data-autoplay="true"
+							data-hoverpause="true"
+							data-gutter="24"
+							data-arrow="true"
+							data-dots="false"
+							data-items-xl="4" 
+							data-items-md="3" 
+							data-items-sm="2" 
+							data-items-xs="1">
+								<!-- Card item START -->
+								<?php
+									$sql = MySql::connect()->prepare("SELECT id, titulo, tema, imagem, DATE_FORMAT(pdate, '%d/%m | %H:%i') as date FROM noticias WHERE pdate <= NOW() AND especial = 'empreenda-mais' ORDER BY pdate DESC LIMIT 10");
+									if($sql->execute() == false && $sql->rowCount() == 0){ die("Error: ".$sql->errorInfo()[2]); }
+									$res = $slq->fetchAll();
 
-</main>
-<!-- **************** MAIN CONTENT END **************** -->
+									foreach($res as $row){
+										$titulo = $row['titulo'];
+										$URL = seoUrl($titulo);
+										$resumo = $row['resumo'];
+										$data = $row['date'];
+										$texto = $row['texto'];
+										$tema = $row['tema'];
+										$URL_tema = seoUrl($tema);
+										$imagem = $row['imagem'];
+										$img = substr($imagem, strlen(INCLUDE_PATH)-1);
+										$video_youtube = $row['video_youtube'];
 
-<!-- =======================
-Footer START -->
-<footer class="mb-3">
-	<div class="container">
-		<div class="card card-body bg-light">
-			<div class="row align-items-center justify-content-between">
-				<div class="col-lg-6">
-					<!-- Copyright -->
-					<div class="text-center text-lg-start">©2022 <a href="https://www.webestica.com/" class="text-reset btn-link" target="_blank">Webestica</a>. All rights reserved
+										echo 	"<div class=\"card\">
+											<div class=\"position-relative\"><img class=\"card-img\" src=\"".INCLUDE_PATH."imgtemp/?largura=700&altura=400&arquivo=$img\" alt=\"Card image\">
+												<div class=\"card-img-overlay d-flex align-items-start flex-column p-3\"></div>
+											</div><!-- Card img -->
+											<div class=\"card-body px-0 pt-3\"><h5 class=\"card-title\"><a href=\"".INCLUDE_PATH."$URL_tema/$URL-{$row['id']}.html\" class=\"btn-link text-reset fw-bold\">$titulo</a></h5>
+												<ul class=\"nav nav-divider align-items-center d-none d-sm-inline-block\">
+													<li class=\"nav-item\">$data</li>
+												</ul><!-- Card date -->
+											</div><!-- Card title -->
+										</div>\n";
+									}
+								?>
+							</div>
+						</div>
 					</div>
 				</div>
-				<div class="col-lg-6 d-sm-flex align-items-center justify-content-center justify-content-lg-end">
-					<!-- Language switcher -->
-					<div class="dropup me-0 me-sm-3 mt-3 mt-md-0 text-center text-sm-end">
-						<a class="dropdown-toggle text-body" href="#" role="button" id="languageSwitcher" data-bs-toggle="dropdown" aria-expanded="false">
-							English Edition
-						</a>
-						<ul class="dropdown-menu min-w-auto" aria-labelledby="languageSwitcher">
-							<li><a class="dropdown-item" href="#">English</a></li>
-							<li><a class="dropdown-item" href="#">German </a></li>
-							<li><a class="dropdown-item" href="#">French</a></li>
-						</ul>
-					</div>
-					<!-- Links -->
-					<ul class="nav text-center text-sm-end justify-content-center justify-content-center mt-3 mt-md-0">
-						<li class="nav-item"><a class="nav-link" href="#">Terms</a></li>
-						<li class="nav-item"><a class="nav-link" href="#">Privacy</a></li>
-						<li class="nav-item"><a class="nav-link pe-0" href="#">Cookies</a></li>
-					</ul>
-				</div>
 			</div>
-		</div>
-	</div>
-</footer>
-<!-- =======================
-Footer END -->
+		</section>
 
-<!-- Back to top -->
-<div class="back-top"><i class="bi bi-arrow-up-short"></i></div>
+		<!-- **************** INDICADORES **************** -->
 
-<!-- =======================
-JS libraries, plugins and custom scripts -->
+		<section class="pt-1">
+			<div class="container" style="margin-top:50px;">
+				<div class="row">
+					<div class="col-md-12">
+						<div class="mb-4 d-md-flex justify-content-between align-items-center"><h2 class="m-0"><i class="bi bi-graph-up-arrow"></i> Indicadores de Içara</h2></div><!-- Title -->
+						<div class="row g-4 pb-4">
+		     			<!-- Card item START -->
+		     			<?php
+		     				$sql = MySql::connect()->prepare("SELECT id, titulo, tema, imagem, DATE_FORMAT(pdate, '%d/%m | %H:%i') as date FROM noticias WHERE pdate <= NOW() AND especial = ? ORDER BY pdate DESC LIMIT 4");
+								if($sql->execute(['indicadores-de-icara']) == false && $sql->rowCount() == 0){ die("Error: ".$sql->errorInfo()[2]); }
+		     				$res = $sql->fetchAll();
 
-<!-- Bootstrap JS -->
-<script src="https://www.canalicara.com/assets/vendor/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+								foreach($res as $row){
+									$titulo = $row['titulo'];
+									$URL = seoUrl($titulo);
+									$resumo = $row['resumo'];
+									$data = $row['date'];
+									$texto = $row['texto'];
+									$tema = $row['tema'];
+									$URL_tema = seoUrl($tema);
+									$imagem = $row['imagem'];
+									$img = substr($imagem, strlen(INCLUDE_PATH)-1);
+									$video_youtube = $row['video_youtube'];
 
-<!-- Vendors -->
-<script src="https://www.canalicara.com/assets/vendor/apexcharts/js/apexcharts.min.js"></script>
-<script src="https://www.canalicara.com/assets/vendor/quill/js/quill.min.js"></script>
+									echo 	"<div class=\"col-sm-6 col-lg-3\">
+										<div class=\"card card-overlay-bottom card-img-scale\">
+											<img class=\"card-img\" src=\"".INCLUDE_PATH."imgtemp/?largura=500&altura=500&arquivo=$img\" alt=\"\"><!-- Card Image -->
+											<div class=\"card-img-overlay d-flex flex-column p-3 p-sm-4\"><div></div>
+			       						<div class=\"w-100 mt-auto\"><h4 class=\"text-white\"><a href=\"".INCLUDE_PATH."$URL_tema/$URL-{$row['id']}.html\" class=\"btn-link text-reset stretched-link\">$titulo</a></h4>
+			        						<ul class=\"nav nav-divider text-white-force align-items-center d-none d-sm-inline-block small\">
+														<li class=\"nav-item\">$data</li>
+													</ul><!-- Card info -->
+												</div><!-- Card title -->
+											</div><!-- Card Image overlay -->
+										</div>
+									</div>\n";
+								}
+							?>
+			 			</div>
+					</div>
+				</DIV>
+			</div>
 
-<!-- Template Functions -->
-<script src="https://www.canalicara.com/assets/js/functions.js"></script>
+			<div class="container">
+				<div class="row g-4">
 
-</body>
+		<?php //INDICADORES : EMPREGOS ====== ?>
+
+							<!-- Counter item -->
+							<div class="col-sm-12 col-lg-4">
+								<div class="card card-body border p-3">
+									<div class="d-flex align-items-center">
+										<!-- Icon -->
+										<div class="icon-xl fs-1 bg-success bg-opacity-10 rounded-3 text-success">&nbsp;<i class="bi bi-gear"></i>&nbsp;</div>
+										<!-- Content -->
+										<div class="ms-3">
+											<?php	
+												$query = "SELECT *, DATE_FORMAT(pdate, '%d/%m/%Y') as date FROM cidade_indicadores WHERE categoria = 'Empregos' ORDER BY id DESC LIMIT 1";
+												$sql = MySql::connect()->prepare($query);
+												$sql->execute();
+												if($sql->rowCount() == 0){ die("Error: ".$sql->errorInfo()[2]); }
+												else{ $result = $sql->fetchAll(); }
+												foreach($result as $key => $row){
+													echo 	"<div class=\"ms-3\">
+														<h3> {$row['titulo']} empregos</h3>
+														<h6 class=\"mb-0\">[até {$row['texto']}]</h6>
+													</div>";
+												}
+											?>
+										</div>
+									</div>
+								</div>
+							</div>
+		 
+
+
+		<?php //INDICADORES : EMPRESAS ====== ?>
+
+							<!-- Counter item -->
+							<div class="col-sm-12 col-lg-4">
+								<div class="card card-body border p-3">
+									<div class="d-flex align-items-center">
+										<!-- Icon -->
+										<div class="icon-xl fs-1 bg-success bg-opacity-10 rounded-3 text-success">&nbsp;<i class="bi bi-building"></i>&nbsp;</div>
+										<!-- Content -->
+										<div class="ms-3">
+											<?php	
+												$query = "SELECT *, DATE_FORMAT(pdate, '%d/%m/%Y') as date FROM cidade_indicadores WHERE categoria = ? ORDER BY id DESC LIMIT 1";
+												$sql = MySql::connect()->prepare($query);
+												$sql->execute(['Empresas']);
+												if($sql->rowCount() == 0){ die("Error: ".$sql->errorInfo()[2]); }
+												else{ $result = $sql->fetchAll(); }
+												foreach($result as $key => $row){
+													echo 	"<div class=\"ms-3\">
+														<h3> {$row['titulo']} empresas</h3>
+														<h6 class=\"mb-0\">[até {$row['texto']}]</h6>
+													</div>";
+												}
+											?>
+										</div>
+									</div>
+								</div>
+							</div>
+
+
+		<?php //INDICADORES : BALANÇA COMERCIAL ====== ?>
+
+							<!-- Counter item -->
+							<div class="col-sm-12 col-lg-4">
+								<div class="card card-body border p-3">
+									<div class="d-flex align-items-center">
+										<!-- Icon -->
+										<div class="icon-xl fs-1 bg-success bg-opacity-10 rounded-3 text-success">&nbsp;<i class="bi bi-airplane"></i>&nbsp;</div>
+										<!-- Content -->
+										<div class="ms-3">
+											<?php	
+												$query = "SELECT *, DATE_FORMAT(pdate, '%d/%m/%Y') as date FROM cidade_indicadores WHERE categoria = 'Balança Comercial' ORDER BY id DESC LIMIT 1";
+												$sql = MySql::connect()->prepare($query);
+												$sql->execute();
+												if($sql->rowCount() == 0){ die("Error: ".$sql->errorInfo()[2]); }
+												else{ $result = $sql->fetchAll(); }
+												foreach($result as $key => $row){
+													echo 	"<div class=\"ms-3\">
+														<h3> US$ {$row['titulo']} </h3>
+														<h6 class=\"mb-0\">Balança Comercial [até {$row['texto']}]</h6>
+													</div>";
+												}	
+											?>
+										</div>
+									</div>
+								</div>
+							</div>
+
+
+		<?php //INDICADORES : IDEB 5º ANO ====== ?>
+
+							<!-- Counter item -->
+							<div class="col-sm-12 col-lg-4">
+								<div class="card card-body border p-3">
+									<div class="d-flex align-items-center">
+										<!-- Icon -->
+										<div class="icon-xl fs-1 bg-info bg-opacity-10 rounded-3 text-info">&nbsp;<i class="bi bi-book"></i>&nbsp;</div>
+										<!-- Content -->
+										<div class="ms-3">
+											<?php	
+												$query = "SELECT *, DATE_FORMAT(pdate, '%d/%m/%Y') as date FROM cidade_indicadores WHERE categoria = 'IDEB - 5º ano' ORDER BY id DESC LIMIT 1";
+												$sql = MySql::connect()->prepare($query);
+												$sql->execute();
+												if($sql->rowCount() == 0){ die("Error: ".$sql->errorInfo()[2]); }
+												else{ $result = $sql->fetchAll(); }
+												foreach($result as $key => $row){
+													echo 	"<div class=\"ms-3\">
+														<h3> {$row['titulo']} IDEB</h3>
+														<h6 class=\"mb-0\">5ª ano [{$row['texto']}]</h6>
+													</div>";	
+												}	
+											?>
+										</div>
+									</div>
+								</div>
+							</div>
+
+		<?php //INDICADORES : IDEB 9º ANO ====== ?>
+
+							<!-- Counter item -->
+							<div class="col-sm-12 col-lg-4">
+								<div class="card card-body border p-3">
+									<div class="d-flex align-items-center">
+										<!-- Icon -->
+										<div class="icon-xl fs-1 bg-info bg-opacity-10 rounded-3 text-info">&nbsp;<i class="bi bi-book"></i>&nbsp;</div>
+										<!-- Content -->
+										<div class="ms-3">
+											<?php	
+												$query = "SELECT *, DATE_FORMAT(pdate, '%d/%m/%Y') as date FROM cidade_indicadores WHERE categoria = 'IDEB - 9º ano' ORDER BY id DESC LIMIT 1";
+												$sql = MySql::connect()->prepare($query);
+												$sql->execute();
+												if($sql->rowCount() == 0){ die("Error: ".$sql->errorInfo()[2]); }
+												else{ $result = $sql->fetchAll(); }
+												foreach($result as $key => $row){
+													echo 	"<div class=\"ms-3\">
+														<h3> {$row['titulo']} IDEB</h3>
+														<h6 class=\"mb-0\">9ª ano [{$row['texto']}]</h6>
+													</div>";
+												}
+											?>
+										</div>
+									</div>
+								</div>
+							</div>
+
+
+		<?php //INDICADORES : IDEB ENSINO MÉDIO ====== ?>
+
+							<!-- Counter item -->
+							<div class="col-sm-12 col-lg-4">
+								<div class="card card-body border p-3">
+									<div class="d-flex align-items-center">
+										<!-- Icon -->
+										<div class="icon-xl fs-1 bg-info bg-opacity-10 rounded-3 text-info">&nbsp;<i class="bi bi-book"></i>&nbsp;</div>
+										<!-- Content -->
+										<div class="ms-3">
+											<?php	
+												$query = "SELECT *, DATE_FORMAT(pdate, '%d/%m/%Y') as date FROM cidade_indicadores WHERE categoria = 'IDEB - Ensino Médio' ORDER BY id DESC LIMIT 1";
+												$sql = MySql::connect()->prepare($query);
+												$sql->execute();
+												if($sql->rowCount() == 0){ die("Error: ".$sql->errorInfo()[2]); }
+												else{ $result = $sql->fetchAll(); }
+												foreach($result as $key => $row){
+													echo 	"<div class=\"ms-3\">
+														<h3> {$row['titulo']} IDEB</h3>
+														<h6 class=\"mb-0\">Ensino Médio [{$row['texto']}]</h6>
+													</div>";
+												}
+											?>
+										</div>
+									</div>
+								</div>
+							</div>
+
+		<?php //INDICADORES : IDHM ====== ?>
+
+							<!-- Counter item -->
+							<div class="col-sm-12 col-lg-4">
+								<div class="card card-body border p-3">
+									<div class="d-flex align-items-center">
+										<!-- Icon -->
+										<div class="icon-xl fs-1 bg-warning bg-opacity-10 rounded-3 text-warning">&nbsp;<i class="bi bi-geo"></i>&nbsp;</div>
+										<!-- Content -->
+										<div class="ms-3">
+
+									<?php	
+										$query = "SELECT *, DATE_FORMAT(pdate, '%d/%m/%Y') as date FROM cidade_indicadores WHERE categoria = 'IDHM' ORDER BY id DESC LIMIT 1";
+										$sql = MySql::connect()->prepare($query);
+										$sql->execute();
+										if($sql->rowCount() == 0){ die("Error: ".$sql->errorInfo()[2]); }
+										else{ $result = $sql->fetchAll(); }
+										foreach($result as $key => $row){
+											echo 	"<div class=\"ms-3\">
+												<h3> {$row['titulo']} IDHM</h3>
+												<h6 class=\"mb-0\">[{$row['texto']}]</h6>
+											</div>";
+										}	?>
+									
+										</div>
+									</div>
+								</div>
+							</div>
+
+		<?php //INDICADORES : PIB ====== ?>
+
+							<!-- Counter item -->
+							<div class="col-sm-12 col-lg-4">
+								<div class="card card-body border p-3">
+									<div class="d-flex align-items-center">
+										<!-- Icon -->
+										<div class="icon-xl fs-1 bg-warning bg-opacity-10 rounded-3 text-warning">&nbsp;<i class="bi bi-cash"></i>&nbsp;</div>
+										<!-- Content -->
+										<div class="ms-3">
+											<?php	
+												$query = "SELECT *, DATE_FORMAT(pdate, '%d/%m/%Y') as date FROM cidade_indicadores WHERE categoria = 'PIB' ORDER BY id DESC LIMIT 1";
+												$sql = MySql::connect()->prepare($query);
+												$sql->execute();
+												if($sql->rowCount() == 0){ die("Error: ".$sql->errorInfo()[2]); }
+												else{ $result = $sql->fetchAll(); }
+												foreach($result as $key => $row){
+													echo 	"<div class=\"ms-3\">
+														<h3>R$ {$row['titulo']} PIB</h3>
+														<h6 class=\"mb-0\">Per capita [{$row['texto']}]</h6>
+													</div>";
+												}	
+											?>
+										</div>
+									</div>
+								</div>
+							</div>
+
+		<?php //INDICADORES : POPULAÇÃO ====== ?>
+
+							<!-- Counter item -->
+							<div class="col-sm-12 col-lg-4">
+								<div class="card card-body border p-3">
+									<div class="d-flex align-items-center">
+										<!-- Icon -->
+										<div class="icon-xl fs-1 bg-warning bg-opacity-10 rounded-3 text-warning">&nbsp;<i class="bi bi-people"></i>&nbsp;</div>
+										<!-- Content -->
+										<div class="ms-3">
+											<?php	
+												$query = "SELECT *, DATE_FORMAT(pdate, '%d/%m/%Y') as date FROM cidade_indicadores WHERE categoria = 'População' ORDER BY id DESC LIMIT 1";
+												$sql = MySql::connect()->prepare($query);
+												$sql->execute();
+												if($sql->rowCount() == 0){ die("Error: ".$sql->errorInfo()[2]); }
+												else{ $result = $sql->fetchAll(); }
+												foreach($result as $key => $row){
+													echo 	"<div class=\"ms-3\">
+														<h3> {$row['titulo']} pessoas</h3>
+														<h6 class=\"mb-0\">[{$row['texto']}]</h6>
+													</div>";	
+												}
+											?>
+										</div>
+									</div>
+								</div>
+							</div>
+
+
+		 		</div>
+		 		<hr>
+		 	</div>
+		 </section>
+
+		 </main>
+
+
+		<?php	//include "2023_pagesconfig_layout_rodape.php";	?>
+
+		<!-- Back to top --><div class="back-top"><i class="bi bi-arrow-up-short"></i></div>
+
+		<? 	//JS libraries, plugins and custom scripts 		?>
+		<? 	//Bootstrap JS 		?><script src="<?=INCLUDE_PATH?>assets/vendor/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+		<? 	//JS.SCRIPTS 		?><script src="<?=INCLUDE_PATH?>assets/scripts.js"></script>
+		<? 	//JS.vendors 		?><script src="<?=INCLUDE_PATH?>assets/vendor/tiny-slider/tiny-slider.js"></script>
+		<? 	//JS.vendors 		?><script src="<?=INCLUDE_PATH?>assets/vendor/sticky-js/sticky.min.js"></script>
+		<? 	//JS.vendors 		?><script src="<?=INCLUDE_PATH?>assets/vendor/glightbox/js/glightbox.js"></script>
+		<? 	//JS.vendors 		?><script src="<?=INCLUDE_PATH?>assets/vendor/plyr/plyr.js"></script>
+		<? 	//JS.template.functions	?><script src="<?=INCLUDE_PATH?>assets/js/functions.js"></script>
+	</body>
 </html>
